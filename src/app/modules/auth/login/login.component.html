@@ -1,0 +1,62 @@
+<div class="login-page">
+  <div class="login-wrapper">
+    <mat-card class="login-card">
+      <div class="brand">
+        <h2>ThinkCivil IAS / थिंकसिविल आईएएस</h2>
+        <p>Empowering Civil Aspirants with Technology / प्रौद्योगिकी के साथ सिविल उम्मीदवारों को सशक्त बनाना</p>
+      </div>
+
+      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>ईमेल / Email</mat-label>
+          <input matInput formControlName="email" type="email" placeholder="अपना ईमेल दर्ज करें / Enter your email" />
+          <mat-error *ngIf="loginForm.get('email')?.hasError('required')">
+            ईमेल आवश्यक है / Email is required
+          </mat-error>
+          <mat-error *ngIf="loginForm.get('email')?.hasError('email')">
+            कृपया वैध ईमेल दर्ज करें / Enter a valid email
+          </mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>पासवर्ड / Password</mat-label>
+          <input matInput formControlName="password" type="password" placeholder="अपना पासवर्ड दर्ज करें / Enter your password" />
+          <mat-error *ngIf="loginForm.get('password')?.hasError('required')">
+            पासवर्ड आवश्यक है / Password is required
+          </mat-error>
+          <mat-error *ngIf="loginForm.get('password')?.hasError('minlength')">
+            पासवर्ड कम से कम 6 अक्षरों का होना चाहिए / Password must be at least 6 characters
+          </mat-error>
+        </mat-form-field>
+
+        <div class="forgot-password-link">
+  <p>
+    <a routerLink="/forgot-password">
+      Forgot Password? / पासवर्ड भूल गए?
+    </a>
+  </p>
+</div>
+
+        <button
+          mat-raised-button
+          color="primary"
+          type="submit"
+          class="login-btn"
+          [disabled]="!loginForm.valid || loading()"
+        >
+          <mat-spinner diameter="20" *ngIf="loading()"></mat-spinner>
+          <span *ngIf="!loading()">लॉगिन / Login</span>
+        </button>
+      </form>
+
+      <div class="register-link">
+        <p>खाता नहीं है? / Don't have an account? <a routerLink="/register">यहाँ पंजीकरण करें / Register here</a></p>
+        <p>thinkCivil <a routerLink="/homepage">वेबसाइट पर जाएं / Go to web</a></p>
+      </div>
+
+      <div class="demo-credentials" *ngIf="!loading()">
+      </div>
+    </mat-card>
+  </div>
+</div>
+<ng-template #inactiveDialog><h2 mat-dialog-title>Account Inactive</h2><mat-dialog-content>Your account is currently inactive. Please contact the administrator to activate your account.</mat-dialog-content><mat-dialog-actions align="end"><button mat-button mat-dialog-close>Close</button></mat-dialog-actions></ng-template>

@@ -1,0 +1,228 @@
+/* Register Page Styles - Matching Login Page Design */
+.register-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 20px;
+  background: linear-gradient(135deg, #e0f7fa, #e3f2fd, #e8eaf6);
+  font-family: 'Poppins', sans-serif;
+}
+
+.register-card {
+  width: 100%;
+  max-width: 450px;
+  padding: 2.5rem;
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  background: #fff;
+  text-align: center;
+  transition: all 0.3s ease-in-out;
+
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+  }
+}
+
+/* Card Header Styling */
+mat-card-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 2rem;
+  padding: 0;
+}
+
+mat-card-title {
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: #1565c0;
+  margin-bottom: 0.5rem;
+}
+
+mat-card-subtitle {
+  color: #616161;
+  font-size: 1rem;
+  margin-bottom: 0;
+}
+
+/* Form Styling */
+mat-card-content {
+  padding: 0;
+}
+
+.full-width {
+  width: 100%;
+  margin-bottom: 1.2rem;
+}
+
+/* OTP Button */
+.otp-button {
+  margin-top: -0.5rem;
+  margin-bottom: 1.2rem;
+  background: linear-gradient(90deg, #4caf50, #2e7d32) !important;
+
+  &:hover:not([disabled]) {
+    background: linear-gradient(90deg, #2e7d32, #1b5e20) !important;
+    box-shadow: 0 4px 10px rgba(76, 175, 80, 0.4) !important;
+  }
+}
+
+/* OTP Section */
+.otp-section {
+  margin-bottom: 1.2rem;
+  animation: fadeIn 0.3s ease;
+}
+
+.otp-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 0.5rem;
+}
+
+.otp-status {
+  font-size: 0.9rem;
+  color: #ff9800;
+  font-weight: 500;
+  
+  &.verified {
+    color: #4caf50;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Form Field Customization */
+::ng-deep .mat-mdc-text-field-wrapper {
+  border-radius: 8px !important;
+}
+
+::ng-deep .mat-mdc-form-field-subscript-wrapper {
+  display: none;
+}
+
+::ng-deep .mat-mdc-form-field {
+  --mat-form-field-container-height: 56px;
+}
+
+::ng-deep .mat-mdc-text-field-wrapper.mdc-text-field--outlined .mat-mdc-form-field-infix {
+  padding-top: 12px;
+  padding-bottom: 8px;
+}
+
+/* Button Styling */
+button[mat-raised-button] {
+  width: 100%;
+  padding: 0.85rem;
+  margin-top: 0.5rem;
+  background: linear-gradient(90deg, #42a5f5, #1e88e5);
+  color: #fff;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  font-size: 1rem;
+  text-transform: none;
+
+  &:hover:not([disabled]) {
+    background: linear-gradient(90deg, #1e88e5, #1565c0);
+    box-shadow: 0 4px 10px rgba(33, 150, 243, 0.4);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+/* Login Link Styling */
+.login-link {
+  margin-top: 1.5rem;
+  padding-top: 1.2rem;
+  border-top: 1px solid #eee;
+
+  p {
+    font-size: 0.95rem;
+    color: #555;
+    margin: 0;
+
+    a {
+      color: #1e88e5;
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.2s ease;
+
+      &:hover {
+        text-decoration: underline;
+        color: #1565c0;
+      }
+    }
+  }
+}
+
+/* Error Message Styling */
+mat-error {
+  font-size: 0.8rem;
+  margin-top: -0.5rem;
+  margin-bottom: 0.5rem;
+  display: block;
+}
+
+/* Form-level error */
+mat-card-content > mat-error {
+  margin-top: 0.5rem;
+  margin-bottom: 1rem;
+  text-align: center;
+  background: #ffebee;
+  padding: 0.5rem;
+  border-radius: 4px;
+  color: #c62828;
+}
+
+/* Spinner in Button */
+mat-spinner {
+  display: inline-block;
+  margin: 0 auto;
+}
+
+/* Responsive Design */
+@media (max-width: 480px) {
+  .register-container {
+    padding: 15px;
+  }
+
+  .register-card {
+    padding: 2rem 1.5rem;
+  }
+
+  mat-card-title {
+    font-size: 1.5rem;
+  }
+
+  mat-card-subtitle {
+    font-size: 0.9rem;
+  }
+}
+
+/* Input Focus Effects */
+::ng-deep .mat-mdc-text-field-wrapper.mdc-text-field--outlined.mdc-text-field--focused .mdc-notched-outline__leading,
+::ng-deep .mat-mdc-text-field-wrapper.mdc-text-field--outlined.mdc-text-field--focused .mdc-notched-outline__notch,
+::ng-deep .mat-mdc-text-field-wrapper.mdc-text-field--outlined.mdc-text-field--focused .mdc-notched-outline__trailing {
+  border-color: #1e88e5 !important;
+}
+
+/* Label Color */
+::ng-deep .mat-mdc-form-field.mat-focused .mat-mdc-floating-label {
+  color: #1e88e5 !important;
+}

@@ -1,0 +1,71 @@
+/* Study Material Slider Mobile Responsive */
+.swiper-button-prev, .swiper-button-next {
+  display: none;
+}
+
+@media (min-width: 992px) {
+  .swiper-button-prev, .swiper-button-next {
+    display: flex;
+    width: 40px;
+    height: 40px;
+    background: var(--main-color);
+    border-radius: 50%;
+    color: white;
+  }
+  
+  .swiper-button-prev:after, .swiper-button-next:after {
+    font-size: 18px;
+  }
+}
+
+/* Mobile optimizations */
+@media (max-width: 991px) {
+  .resource_card_slider {
+    padding-bottom: 40px;
+  }
+  
+  .swiper-pagination {
+    bottom: 0 !important;
+  }
+  
+  .swiper-pagination-bullet {
+    width: 10px;
+    height: 10px;
+  }
+}
+
+/* Touch improvements */
+.swiper {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+.swiper-slide {
+  height: auto;
+}
+
+
+/* Increase image visibility area - Percentage based */
+.resource_card .img {
+  width: 100%;
+  height: 65%; /* Takes 65% of card height */
+  object-fit: cover;
+  object-position: center;
+  display: block;
+}
+
+/* Adjust card to have more height */
+.resource_card {
+  height: 450px; /* Fixed height for consistency */
+  display: flex;
+  flex-direction: column;
+}
+
+/* Ensure content area adjusts */
+.card_div {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
