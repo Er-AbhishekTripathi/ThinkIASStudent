@@ -216,14 +216,14 @@ export class HomepageComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
-  // scrollToSection(sectionId: string): void {
-  //   const element = document.getElementById(sectionId);
-  //   if (element) {
-  //     const yOffset = -80; // Adjust for fixed header
-  //     const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
-  //     window.scrollTo({ top: y, behavior: 'smooth' });
-  //   }
-  // }
+  scrollToSection(sectionId: string): void {
+    const element = document.getElementById(sectionId);
+    if (element) {
+      const yOffset = -80; // Adjust for fixed header
+      const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
+      window.scrollTo({ top: y, behavior: 'smooth' });
+    }
+  }
 
   openView(type: string) {
   const dialogRef = this.dialog.open(ResourcesViewComponent, {

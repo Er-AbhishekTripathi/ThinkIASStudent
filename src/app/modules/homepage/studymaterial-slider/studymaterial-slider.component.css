@@ -1,21 +1,15 @@
 /* Study Material Slider Mobile Responsive */
-.swiper-button-prev, .swiper-button-next {
-  display: none;
+.study_slider {
+  padding-bottom: 50px;
 }
 
-@media (min-width: 992px) {
-  .swiper-button-prev, .swiper-button-next {
-    display: flex;
-    width: 40px;
-    height: 40px;
-    background: var(--main-color);
-    border-radius: 50%;
-    color: white;
-  }
-  
-  .swiper-button-prev:after, .swiper-button-next:after {
-    font-size: 18px;
-  }
+.study_slider .swiper-wrapper {
+  align-items: stretch;
+}
+
+.study_slider .swiper-slide {
+  height: auto;
+  display: flex;
 }
 
 /* Mobile optimizations */
@@ -68,4 +62,70 @@
   flex: 1;
   display: flex;
   flex-direction: column;
+}
+
+.resource_card {
+  box-shadow: 0 10px 26px rgba(0, 0, 0, .16);
+  overflow: hidden;
+  width: 100%;
+}
+
+.resource_card .res span {
+  font-size: .82rem;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: background .2s ease, color .2s ease;
+}
+
+.resource_card .res span:hover {
+  background: var(--main-color, #003b67);
+  color: #fff;
+  border-color: var(--main-color, #003b67);
+}
+
+.stripe {
+  right: 12px;
+}
+
+@media (max-width: 767.98px) {
+  .study_slider .swiper-slide {
+    width: 100% !important;
+  }
+
+  .resource_card {
+    height: 400px;
+    max-width: 300px;
+    width: 90%;
+    margin: 0 auto;
+  }
+
+  .resource_card_slider {
+    align-items: stretch;
+  }
+
+  .card_icon {
+    width: 52px;
+    height: 52px;
+  }
+
+  .card_heading h5 {
+    font-size: 1.05rem;
+  }
+
+  .resource_card .res {
+    gap: 8px !important;
+    flex-wrap: wrap;
+  }
+
+  .resource_card .res span {
+    padding: 5px 10px;
+    font-size: .78rem;
+  }
+
+  .stripe {
+    top: -34px;
+    right: 8px;
+    font-size: 12px;
+    padding: 3px 9px;
+  }
 }

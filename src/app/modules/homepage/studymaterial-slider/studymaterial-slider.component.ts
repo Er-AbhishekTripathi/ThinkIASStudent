@@ -3,7 +3,7 @@ import { Component, AfterViewInit, OnInit, OnDestroy, inject } from '@angular/co
 import { CommonModule } from '@angular/common';
 import { MatDialog } from '@angular/material/dialog';
 import Swiper from 'swiper';
-import { Autoplay, Pagination, Navigation } from 'swiper/modules';
+import { Autoplay, Pagination } from 'swiper/modules';
 import { ModuleService, Module } from '../../../shared/services/module.service';
 import { ViewFreeResourcesComponent } from '../../../shared/components/view-free-resources/view-free-resources.component';
 import { ResourceViewerComponent } from '../../../shared/components/resource-viewer/resource-viewer.component';
@@ -84,12 +84,12 @@ export class StudymaterialSliderComponent implements OnInit, AfterViewInit, OnDe
     
     try {
       this.swiper = new Swiper('.study_slider', {
-        modules: [Autoplay, Pagination, Navigation],
-        slidesPerView: 4,
+        modules: [Autoplay, Pagination],
+        slidesPerView: 1,
         spaceBetween: 20,
-        loop: this.modules.length > 4,
+        loop: this.modules.length > 2,
         autoplay: {
-          delay: 2500,
+          delay: 3500,
           disableOnInteraction: false,
           pauseOnMouseEnter: true
         },
@@ -98,16 +98,11 @@ export class StudymaterialSliderComponent implements OnInit, AfterViewInit, OnDe
           clickable: true
         },
         breakpoints: {
-          0: { slidesPerView: 1, spaceBetween: 10 },
-          480: { slidesPerView: 1, spaceBetween: 10 },
-          576: { slidesPerView: 2, spaceBetween: 15 },
-          768: { slidesPerView: 3, spaceBetween: 15 },
-          992: { slidesPerView: 4, spaceBetween: 20 }
+          768: { slidesPerView: 2, spaceBetween: 26 },
+          1200: { slidesPerView: 3, spaceBetween: 30 }
         },
-        navigation: {
-          nextEl: '.swiper-button-next',
-          prevEl: '.swiper-button-prev'
-        }
+        observer: true,
+        observeParents: true
       });
       
       this.isSwiperInitialized = true;

@@ -331,9 +331,9 @@ width: 100%;
 }
 
 .header ul li a {
-	padding: 5px 10px;
+	padding: 5px 8px;
 	border-right: 1px solid var(--light-gray-color);
-  font-size: 16px;
+  font-size: 15px;
   color: var(--secoundary-color);
   transition: .3s;
 }
@@ -363,7 +363,7 @@ width: 100%;
 
 .desktop_menu .menu {
 	justify-content: flex-end;
-	flex-wrap: wrap;
+	flex-wrap: nowrap;
 	row-gap: 2px;
 	margin: 0;
 	padding: 8px 0;
@@ -383,7 +383,18 @@ width: 100%;
 	}
 
 	.header ul li a {
-		padding: 4px 6px;
+		padding: 4px 5px;
+		font-size: 13px;
+	}
+}
+
+@media (min-width: 1200px) and (max-width: 1439px) {
+	.logo_main {
+		max-width: 140px;
+	}
+
+	.header ul li a {
+		padding: 4px 7px;
 		font-size: 14px;
 	}
 }
@@ -1079,7 +1090,8 @@ app-slider{
 	}
 
 	.footer {
-		padding: 60px 0 20px 0;
+		padding: 50px 0 20px 0;
+		background: var(--dark-color, #000);
 	}
 
 	.price {
