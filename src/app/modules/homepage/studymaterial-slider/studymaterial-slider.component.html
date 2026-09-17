@@ -30,6 +30,7 @@
 
         <!-- Modules Grid -->
         <div *ngIf="!loading && !error && modules.length > 0" class="row">
+            <div class="col-12">
             <div class="overflow-hidden swiper study_slider">
                 <div class="resource_card_slider swiper-wrapper">
                     <!-- Dynamic Cards from API - Added click handler -->
@@ -60,8 +61,7 @@
                     </div>
                 </div>
                 <div class="swiper-pagination"></div>
-                <div class="swiper-button-next"></div>
-                <div class="swiper-button-prev"></div>
+            </div>
             </div>
         </div>
 

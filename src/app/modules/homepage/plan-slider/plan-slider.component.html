@@ -4,8 +4,11 @@
       <p>{{ currentLanguage === 'hi' ? 'योजनाएं और शुल्क' : 'Plans & Pricing' }}</p>
       <h4 class="sub_heading mb-2">{{ currentLanguage === 'hi' ? 'अपनी तैयारी के लिए सही योजना चुनें' : 'Choose the right plan for your preparation' }}</h4>
     </div>
-    <div class="row g-4 py-4" *ngIf="plans.length">
-      <div class="col-md-4" *ngFor="let plan of plans"><article class="price_card plan-card card h-100 p-4"><span class="plan-badge" *ngIf="plan.badge">{{ plan.badge | t:plan.badgeHindi }}</span><div class="plan-icon"><i class="bi bi-compass"></i></div><h3>{{plan.name | t:plan.nameHindi}}</h3><p class="plan-subtitle">{{plan.subtitle | t:plan.subtitleHindi}}</p><div class="plan-pricing"><span class="plan-original-price" *ngIf="plan.baseAmount > plan.totalAmount">₹{{plan.baseAmount | number:'1.0-0'}}</span><span class="plan-current-price">₹{{plan.totalAmount | number:'1.0-0'}}</span><span class="plan-saving" *ngIf="plan.baseAmount > plan.totalAmount">Save ₹{{(plan.baseAmount - plan.totalAmount) | number:'1.0-0'}}</span></div><p class="plan-duration">{{plan.duration | t:plan.durationHindi}}</p><ul><li *ngFor="let feature of plan.features; let i = index"><i class="bi bi-check2-circle"></i>{{feature | t:plan.featuresHindi?.[i]}}</li></ul><a class="common_button" routerLink="/register">{{'Enroll Now' | t}}</a></article></div>
+    <div *ngIf="plans.length" #pricingSlider class="swiper pricing-slider">
+      <div class="swiper-wrapper">
+        <div class="swiper-slide" *ngFor="let plan of plans"><article class="price_card plan-card card h-100 p-4"><span class="plan-badge" *ngIf="plan.badge">{{ plan.badge | t:plan.badgeHindi }}</span><div class="plan-icon"><i class="bi bi-compass"></i></div><h3>{{plan.name | t:plan.nameHindi}}</h3><p class="plan-subtitle">{{plan.subtitle | t:plan.subtitleHindi}}</p><div class="plan-pricing"><span class="plan-original-price" *ngIf="plan.baseAmount > plan.totalAmount">₹{{plan.baseAmount | number:'1.0-0'}}</span><span class="plan-current-price">₹{{plan.totalAmount | number:'1.0-0'}}</span><span class="plan-saving" *ngIf="plan.baseAmount > plan.totalAmount">Save ₹{{(plan.baseAmount - plan.totalAmount) | number:'1.0-0'}}</span></div><p class="plan-duration">{{plan.duration | t:plan.durationHindi}}</p><ul><li *ngFor="let feature of plan.features; let i = index"><i class="bi bi-check2-circle"></i>{{feature | t:plan.featuresHindi?.[i]}}</li></ul><a class="common_button" routerLink="/register">{{'Enroll Now' | t}}</a></article></div>
+      </div>
+      <div class="swiper-pagination"></div>
     </div>
     <div class="main_heading py-3 text-center">
       <p>{{ currentLanguage === 'hi' ? 'आपकी योजना में शामिल सुविधाएं' : 'Plan Benefits' }}</p>
@@ -35,8 +38,6 @@
         </div>
       </div>
       <div class="swiper-pagination"></div>
-      <button type="button" class="swiper-button-prev" aria-label="Previous plan"></button>
-      <button type="button" class="swiper-button-next" aria-label="Next plan"></button>
     </div>
   </div>
 </section>

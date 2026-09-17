@@ -1,5 +1,11 @@
 /* Mobile Responsive Styles */
 
+/* Footer social icons - wrap so they never overflow into the next column */
+.footer .social-icons {
+  flex-wrap: wrap;
+  row-gap: 10px;
+}
+
 /* Header Mobile */
 @media (max-width: 991px) {
   .header .top_right_header {
@@ -269,12 +275,21 @@
 /* Footer Mobile */
 @media (max-width: 767px) {
   .footer {
-    padding: 60px 0 20px 0;
+    padding: 50px 0 20px 0;
     text-align: center;
+    background: var(--dark-color, #000);
   }
   
   .footer .row > div {
     margin-bottom: 30px;
+  }
+
+  .footer .social-icons {
+    justify-content: center;
+  }
+
+  .footer .language-toggle-footer {
+    justify-content: center;
   }
 }
 
