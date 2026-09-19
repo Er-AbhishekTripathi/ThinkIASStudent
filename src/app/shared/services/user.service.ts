@@ -63,6 +63,10 @@ export class UserService {
     return this.http.get<any>(`${this.apiUrl}/auth/me`);
   }
 
+  getActivePlanIds(): Observable<{ planIds: string[] }> {
+    return this.http.get<{ planIds: string[] }>(`${this.apiUrl}/payments/active-plans`);
+  }
+
   getAllVideos(): Observable<any> {
     return this.http.get<any>(`${this.apiUrl}/live-content/public`);
   }

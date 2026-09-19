@@ -29,20 +29,41 @@
 
 .dashboard-hero h1 { margin: 8px 0 6px; font-size: clamp(26px, 3vw, 38px); line-height: 1.1; }
 .dashboard-hero p { margin: 0; color: #d7e7ed; font-size: 14px; }
+.profile-summary { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px; }
+.profile-chip { display: inline-flex; align-items: center; gap: 6px; padding: 8px 11px; border: 1px solid rgba(255, 255, 255, .25); border-radius: 999px; color: #e4f3ed; background: rgba(255, 255, 255, .1); font-size: 12px; }
+.profile-chip mat-icon { width: 17px; height: 17px; color: #f5d995; font-size: 17px; }
+.profile-chip b { color: #fff; }
+.plan-chip { color: #fbe9b3; }
 .hero-compass { display: grid; place-items: center; width: 68px; height: 68px; border: 1px solid rgba(255,255,255,.3); border-radius: 50%; color: #d8f2e1; transform: rotate(-10deg); }
 .hero-compass mat-icon { font-size: 32px; width: 32px; height: 32px; }
 
 .dashboard-quick-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 26px; }
-.dashboard-quick-stats > div { display: flex; align-items: center; gap: 14px; padding: 17px 20px; border: 1px solid #e0e8ee; border-radius: 14px; background: #fff; box-shadow: 0 6px 18px rgba(16,42,67,.05); }
-.dashboard-quick-stats mat-icon { color: #198754; }
+.quick-stat-link { display: flex; align-items: center; gap: 14px; padding: 17px 20px; border: 1px solid #e0e8ee; border-radius: 14px; color: inherit; background: #fff; box-shadow: 0 6px 18px rgba(16,42,67,.05); text-decoration: none; transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease; }
+.quick-stat-link:hover { transform: translateY(-3px); border-color: #9bd2b3; box-shadow: 0 13px 28px rgba(25,135,84,.12); }
+.quick-stat-link > mat-icon:first-child { color: #198754; }
 .dashboard-quick-stats span { display: flex; flex-direction: column; gap: 3px; color: #64748b; font-size: 12px; }
 .dashboard-quick-stats strong { color: #102a43; font-size: 22px; }
+.quick-stat-arrow { width: 18px; height: 18px; margin-left: auto; color: #8da09c; font-size: 18px; }
 
 .stats-grid { gap: 18px; margin-bottom: 28px; }
 .stats-grid mat-card, .results-grid mat-card, .plan-card { border: 1px solid #e0e8ee; border-radius: 14px; box-shadow: 0 7px 22px rgba(16,42,67,.06); }
 .stats-grid mat-card:hover, .results-grid mat-card:hover, .plan-card:hover { border-color: #9bd2b3; box-shadow: 0 13px 28px rgba(25,135,84,.12); }
 
 .upcoming-tests-panel, .recent-results, .plans-section, .testimonials-section { margin-top: 30px; }
+.study-shortcuts { margin-top: 30px; }
+.shortcut-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(235px, 1fr)); gap: 14px; }
+.shortcut-card { display: flex; align-items: center; gap: 12px; min-height: 82px; padding: 14px 16px; border: 1px solid #dce9e4; border-radius: 14px; color: #173b3b; background: #fff; text-decoration: none; box-shadow: 0 7px 20px rgba(19, 59, 59, .05); transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease; }
+.shortcut-card:hover { transform: translateY(-3px); border-color: #8bc8b9; box-shadow: 0 12px 26px rgba(19, 96, 82, .12); }
+.shortcut-card > span:nth-child(2) { display: flex; flex: 1; min-width: 0; flex-direction: column; gap: 4px; }
+.shortcut-card strong { font-size: 14px; }
+.shortcut-card small { color: #6d8580; font-size: 11px; line-height: 1.35; }
+.shortcut-icon { display: grid; place-items: center; flex: 0 0 40px; width: 40px; height: 40px; border-radius: 11px; }
+.shortcut-icon mat-icon { width: 21px; height: 21px; font-size: 21px; }
+.prelims-icon { color: #197c6b; background: #e8f6f1; }
+.mains-icon { color: #4861b2; background: #eef0ff; }
+.resources-icon { color: #b87826; background: #fff4df; }
+.session-icon { color: #a34c6c; background: #fff0f5; }
+.shortcut-arrow { width: 18px; height: 18px; color: #8da09c; font-size: 18px; }
 .upcoming-tests-panel { padding: 24px; border: 1px solid #e0e8ee; border-radius: 16px; background: #fff; box-shadow: 0 7px 22px rgba(16,42,67,.05); }
 .section-heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; margin-bottom: 18px; }
 .section-heading h2, .recent-results > h2, .plans-section > h2, .testimonials-section > h2 { margin: 8px 0 0; color: #102a43; }
@@ -65,6 +86,7 @@
   .dashboard-hero { min-height: 128px; padding: 22px 24px; }
   .hero-compass { display: none; }
   .dashboard-quick-stats { grid-template-columns: 1fr; }
+  .shortcut-grid { grid-template-columns: 1fr; }
   .plans-section { padding: 20px 16px; }
 }
 

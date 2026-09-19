@@ -539,10 +539,7 @@ export class TakeTestComponent implements OnInit, OnDestroy, AfterViewInit {
 
   confirmSubmit() {
     this.showSubmitDialog = false;
-    setTimeout(() => {
-      
-      this.submitTest();
-    },1000);
+    this.submitTest();
   }
 
   autoSubmit() {
@@ -611,14 +608,14 @@ export class TakeTestComponent implements OnInit, OnDestroy, AfterViewInit {
         
         this.isAutoSubmitted = isAutoSubmit;
         
-        // Show results dialog
-        this.showResultsDialog = true;
-        
         // Reset submitting flag
         this.isSubmitting = false;
         
         // Force change detection
         this.cdr.detectChanges();
+
+        // Leave the exam screen as soon as the single submission succeeds.
+        this.router.navigate(['/dashboard']);
       },
       error: (error) => {
         console.error('Test submission error:', error);

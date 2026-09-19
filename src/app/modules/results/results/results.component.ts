@@ -156,7 +156,7 @@ export class ResultsComponent implements OnInit, AfterViewChecked {
 
     this.dialogRef = this.dialog.open(this.sendQueryDialog, {
       width: '600px',
-      height: '700px',
+      maxHeight: '90vh',
       disableClose: false
     });
 

@@ -41,6 +41,7 @@ export class DashboardComponent implements OnInit {
   currentUser = this.authService.currentUser;
   upcomingTests = signal<any[]>([]);
   recentResults = signal<any[]>([]);
+  activePlanIds = signal<string[]>([]);
   completedTestsCount = signal<number>(0);
   totalTestsCount = signal<number>(0);
   totalStudentsCount = signal<number>(0);
@@ -51,6 +52,10 @@ export class DashboardComponent implements OnInit {
 
   ngOnInit() {
     this.planService.getPlans().subscribe({ next: plans => this.plans.set(plans), error: error => console.error('Error loading plans:', error) });
+    this.userService.getActivePlanIds().subscribe({
+      next: response => this.activePlanIds.set(response.planIds || []),
+      error: error => console.error('Error loading active plans:', error)
+    });
     const user = this.currentUser();
     
     if (user?.role === 'student') {
@@ -165,6 +170,19 @@ export class DashboardComponent implements OnInit {
     
     const avgPercentage = results.reduce((sum, result) => sum + parseFloat(result.percentage), 0) / results.length;
     return `Average: ${avgPercentage.toFixed(1)}%`;
+  }
+
+  getUserTypeLabel(): string {
+    const type = this.currentUser()?.type;
+    return type === 'pre' ? 'Prelims' : type === 'mains' ? 'Mains' : type === 'combo' ? 'Prelims + Mains' : 'Fresh Student';
+  }
+
+  getPurchasedPlanNames(): string[] {
+    const activeIds = this.activePlanIds();
+    return this.plans()
+      .filter(plan => activeIds.includes(plan.id))
+      .sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0))
+      .map(plan => plan.name);
   }
 
   navigateToStudentsList() {
