@@ -1,5 +1,5 @@
 import { TranslatePipe } from '../../shared/i18n/translate.pipe';
-import { Component, inject, signal, OnInit } from '@angular/core';
+import { AfterViewChecked, Component, ElementRef, inject, signal, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
@@ -14,6 +14,9 @@ import { UserService } from '../../shared/services/user.service';
 import { Plan, PublicPlanService } from '../../shared/services/public-plan.service';
 import { Testimonial, TestimonialService } from '../../shared/services/testimonial.service';
 import { ReviewSliderComponent } from '../homepage/review-slider/review-slider.component';
+import { Chart, registerables } from 'chart.js';
+
+Chart.register(...registerables);
 
 @Component({
   selector: 'app-dashboard',
@@ -29,7 +32,7 @@ import { ReviewSliderComponent } from '../homepage/review-slider/review-slider.c
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.css'
 })
-export class DashboardComponent implements OnInit {
+export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
   private authService = inject(AuthService);
   private testService = inject(TestService);
   private userService = inject(UserService);
@@ -49,6 +52,8 @@ export class DashboardComponent implements OnInit {
   
   loading = signal<boolean>(true);
   plans = signal<Plan[]>([]);
+  @ViewChild('performanceChart') performanceChart?: ElementRef<HTMLCanvasElement>;
+  private performanceChartInstance: Chart | null = null;
 
   ngOnInit() {
     this.planService.getPlans().subscribe({ next: plans => this.plans.set(plans), error: error => console.error('Error loading plans:', error) });
@@ -68,6 +73,16 @@ export class DashboardComponent implements OnInit {
       }
     } else if (user?.role === 'admin') {
       this.loadAdminData();
+    }
+  }
+
+  ngOnDestroy() {
+    this.performanceChartInstance?.destroy();
+  }
+
+  ngAfterViewChecked() {
+    if (!this.performanceChartInstance && this.recentResults().length) {
+      this.renderPerformanceChart();
     }
   }
 
@@ -123,15 +138,67 @@ export class DashboardComponent implements OnInit {
 
     this.testService.getStudentResults().subscribe({
       next: (results) => {
-        this.recentResults.set(results.slice(0, 5));
-        this.completedTestsCount.set(results.length);
+        const attemptedResults = results.filter(result =>
+          !!result?._id && !!result.test?._id
+        );
+        this.recentResults.set(attemptedResults.slice(0, 5));
+        this.completedTestsCount.set(attemptedResults.length);
         this.loading.set(false);
+        setTimeout(() => this.renderPerformanceChart());
       },
       error: (error) => {
         console.error('Error loading student results:', error);
         this.loading.set(false);
       }
     });
+  }
+
+  private renderPerformanceChart() {
+    const canvas = this.performanceChart?.nativeElement;
+    const results = [...this.recentResults()].reverse();
+    if (!canvas || results.length === 0) return;
+
+    this.performanceChartInstance?.destroy();
+    this.performanceChartInstance = new Chart(canvas, {
+      type: 'line',
+      data: {
+        labels: results.map(result => result.test?.title || 'Test'),
+        datasets: [{
+          data: results.map(result => this.getResultPercentage(result)),
+          borderColor: '#198754',
+          backgroundColor: 'rgba(25, 135, 84, .12)',
+          pointBackgroundColor: '#ffffff',
+          pointBorderColor: '#198754',
+          pointBorderWidth: 3,
+          pointRadius: 5,
+          pointHoverRadius: 7,
+          borderWidth: 3,
+          fill: true,
+          tension: .35
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: { callbacks: { label: context => `${Number(context.parsed.y ?? 0).toFixed(1)}% of total marks` } }
+        },
+        scales: {
+          y: { min: 0, max: 100, ticks: { callback: value => `${value}%` }, grid: { color: '#e7eef2' } },
+          x: { grid: { display: false }, ticks: { maxRotation: 0, autoSkip: true, maxTicksLimit: 5 } }
+        }
+      }
+    });
+  }
+
+  private getResultPercentage(result: any): number {
+    const percentage = Number(result.percentage);
+    if (Number.isFinite(percentage)) return Math.max(0, Math.min(100, percentage));
+
+    const score = Number(result.score);
+    const totalMarks = Number(result.totalMarks);
+    return totalMarks > 0 ? Math.max(0, Math.min(100, (score / totalMarks) * 100)) : 0;
   }
 
   loadAdminData() {

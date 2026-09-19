@@ -20,6 +20,7 @@ import { interval, Subscription } from 'rxjs';
 import { QuizService } from '../../shared/services/quiz.service';
 import { QuizDialogComponent } from './quiz-dialog/quiz-dialog.component';
 import { HeaderComponent } from '../homepage/header/header.component';
+import { PublicFooterComponent } from '../../shared/components/public-footer/public-footer.component';
 import { MatExpansionModule } from '@angular/material/expansion'; // Add this
 
 // Update the QuizResult interface
@@ -107,6 +108,7 @@ interface LeaderboardItem {
     MatProgressBarModule,
     MatMenuModule,
     HeaderComponent,
+    PublicFooterComponent,
     MatExpansionModule
   ],
   templateUrl: './free-quiz.component.html',
@@ -130,6 +132,7 @@ export class FreeQuizComponent implements OnInit, OnDestroy {
   quizLoading = signal(false);
   submitting = signal(false);
   quizCompleted = signal(false);
+  submissionError = signal<string | null>(null);
   
   // User info
   userInfoForm: FormGroup;
@@ -336,6 +339,7 @@ export class FreeQuizComponent implements OnInit, OnDestroy {
     }
 
     this.submitting.set(true);
+    this.submissionError.set(null);
     this.stopTimer(); // Stop the timer when submitting
     
     const submissionData = {
@@ -357,7 +361,9 @@ export class FreeQuizComponent implements OnInit, OnDestroy {
       },
       error: (error) => {
         console.error('Error submitting quiz:', error);
-        this.snackBar.open(error.error?.message || 'Error submitting quiz', 'Close', { duration: 3000 });
+        const message = error.error?.message || 'Error submitting quiz';
+        this.submissionError.set(message);
+        this.snackBar.open(message, 'Close', { duration: 3000 });
         this.submitting.set(false);
       }
     });
@@ -889,6 +895,7 @@ restartQuiz() {
   this.currentQuiz.set(null);
   this.quizQuestions.set([]);
   this.quizCompleted.set(false);
+  this.submissionError.set(null);
   this.quizResult.set(null);
   this.leaderboard.set([]);
   this.answers.set([]);
