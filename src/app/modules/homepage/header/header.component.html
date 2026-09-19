@@ -70,19 +70,31 @@
                         <li (click)="scrollToSection('about')"><a href="javascript:void(0)" class="en">About</a><a
                                 href="javascript:void(0)" class="hi">हमारे बारे में</a>
                         </li>
+<<<<<<< Updated upstream
+=======
+
+                        <li (click)="scrollToSection('guidence')"><a href="javascript:void(0)" class="en">Objective</a><a
+                            href="javascript:void(0)" class="hi">उद्देश्य</a></li>
+
+                        <li (click)="scrollToSection('materials')"><a href="javascript:void(0)"
+                            class="en">Syllabus</a><a href="javascript:void(0)" class="hi">पाठ्यक्रम</a></li>
+>>>>>>> Stashed changes
 
                         <!-- Mentorship Program Dropdown -->
                         <li class="dropdown position-relative" *ngFor="let group of programGroups"><a class="dropdown-toggle" href="#" (click)="$event.preventDefault()" data-bs-toggle="dropdown">{{currentLanguage==='hi'?group.hi:group.label}}</a><div class="dropdown-menu"><a class="dropdown-item" routerLink="/programs" [queryParams]="{category:group.categories[0]}">View all</a><a class="dropdown-item" *ngFor="let program of groupPrograms(group)" [routerLink]="['/program',program._id]">{{currentLanguage==='hi'?(program.programNameHindi||program.programName):program.programName}}</a></div></li>
 
+<<<<<<< Updated upstream
                         <li (click)="scrollToSection('materials')"><a href="javascript:void(0)"
                                 class="en">Syllabus</a><a href="javascript:void(0)" class="hi">पाठ्यक्रम</a></li>
 
+=======
+>>>>>>> Stashed changes
                         <li class="dropdown position-relative">
                             <a href="javascript:void(0)" class="en dropdown-toggle" data-bs-toggle="dropdown">
-                                Free Resources
+                            Resources
                             </a>
                             <a href="javascript:void(0)" class="hi dropdown-toggle" data-bs-toggle="dropdown">
-                                मुफ्त सामग्री
+                            संसाधन
                             </a>
                             <div class="dropdown-menu">
                                 <ng-container
@@ -118,6 +130,10 @@
                                 </ng-container>
                             </div>
                         </li>
+<<<<<<< Updated upstream
+=======
+                        <li><a routerLink="/careers-page" class="en">Career</a><a routerLink="/careers-page" class="hi">करियर</a></li>
+>>>>>>> Stashed changes
                         <li (click)="scrollToSection('footer')"><a href="javascript:void(0)" class="en">Contact Us</a><a
                                 href="javascript:void(0)" class="hi">संपर्क
                                 करें</a></li>
@@ -140,10 +156,27 @@
             <a class="d-block py-2 en" [class.hide]="currentLanguage !== 'en'">About</a>
             <a class="d-block py-2 hi" [class.hide]="currentLanguage !== 'hi'">हमारे बारे में</a>
         </li>
+<<<<<<< Updated upstream
 
         <!-- Mentorship Program Mobile -->
         <li *ngFor="let group of programGroups"><details><summary>{{currentLanguage==='hi'?group.hi:group.label}}</summary><a class="d-block py-2" routerLink="/programs" [queryParams]="{category:group.categories[0]}" (click)="closeMobileMenu()">View all</a><a class="d-block py-2" *ngFor="let program of groupPrograms(group)" [routerLink]="['/program',program._id]" (click)="closeMobileMenu()">{{currentLanguage==='hi'?(program.programNameHindi||program.programName):program.programName}}</a></details></li>
 
+=======
+
+        <li (click)="scrollToSection('guidence'); closeMobileMenu()">
+            <a class="d-block py-2 en" [class.hide]="currentLanguage !== 'en'">Objective</a>
+            <a class="d-block py-2 hi" [class.hide]="currentLanguage !== 'hi'">उद्देश्य</a>
+        </li>
+
+        <li (click)="scrollToSection('materials'); closeMobileMenu()">
+            <a class="d-block py-2 en" [class.hide]="currentLanguage !== 'en'">Syllabus</a>
+            <a class="d-block py-2 hi" [class.hide]="currentLanguage !== 'hi'">पाठ्यक्रम</a>
+        </li>
+
+        <!-- Mentorship Program Mobile -->
+        <li *ngFor="let group of programGroups"><details><summary>{{currentLanguage==='hi'?group.hi:group.label}}</summary><a class="d-block py-2" routerLink="/programs" [queryParams]="{category:group.categories[0]}" (click)="closeMobileMenu()">View all</a><a class="d-block py-2" *ngFor="let program of groupPrograms(group)" [routerLink]="['/program',program._id]" (click)="closeMobileMenu()">{{currentLanguage==='hi'?(program.programNameHindi||program.programName):program.programName}}</a></details></li>
+
+>>>>>>> Stashed changes
         <li (click)="scrollToSection('materials'); closeMobileMenu()">
             <a class="d-block py-2 en" [class.hide]="currentLanguage !== 'en'">Syllabus</a>
             <a class="d-block py-2 hi" [class.hide]="currentLanguage !== 'hi'">पाठ्यक्रम</a>
@@ -154,12 +187,12 @@
             <a href="javascript:void(0)" class="d-block py-2 en mobile-dropdown-toggle" 
                [class.hide]="currentLanguage !== 'en'"
                (click)="toggleMobileDropdown('freeresources')">
-                Free Resources <i class="bi" [class.bi-chevron-down]="activeMobileDropdown !== 'freeresources'" [class.bi-chevron-up]="activeMobileDropdown === 'freeresources'"></i>
+                Resources <i class="bi" [class.bi-chevron-down]="activeMobileDropdown !== 'freeresources'" [class.bi-chevron-up]="activeMobileDropdown === 'freeresources'"></i>
             </a>
             <a href="javascript:void(0)" class="d-block py-2 hi mobile-dropdown-toggle" 
                [class.hide]="currentLanguage !== 'hi'"
                (click)="toggleMobileDropdown('freeresources')">
-                मुफ्त संसाधन <i class="bi" [class.bi-chevron-down]="activeMobileDropdown !== 'freeresources'" [class.bi-chevron-up]="activeMobileDropdown === 'freeresources'"></i>
+                संसाधन <i class="bi" [class.bi-chevron-down]="activeMobileDropdown !== 'freeresources'" [class.bi-chevron-up]="activeMobileDropdown === 'freeresources'"></i>
             </a>
             <div class="mobile-dropdown-content" [class.show]="activeMobileDropdown === 'freeresources'">
                 <ng-container *ngIf="!loadingModules && !modulesError && (!modules || modules.length === 0)">
@@ -187,6 +220,14 @@
             </div>
         </li>
 
+<<<<<<< Updated upstream
+=======
+        <li>
+            <a routerLink="/careers-page" (click)="closeMobileMenu()" class="d-block py-2 en" [class.hide]="currentLanguage !== 'en'">Career</a>
+            <a routerLink="/careers-page" (click)="closeMobileMenu()" class="d-block py-2 hi" [class.hide]="currentLanguage !== 'hi'">करियर</a>
+        </li>
+
+>>>>>>> Stashed changes
         <li (click)="scrollToSection('footer'); closeMobileMenu()">
             <a class="d-block py-2 en" [class.hide]="currentLanguage !== 'en'">Contact Us</a>
             <a class="d-block py-2 hi" [class.hide]="currentLanguage !== 'hi'">संपर्क करें</a>

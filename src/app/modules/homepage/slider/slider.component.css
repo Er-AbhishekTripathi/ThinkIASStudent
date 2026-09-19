@@ -446,6 +446,11 @@
   }
 }
 
+/* Only five homepage slides are available; hide stale trailing pagination dots. */
+.swiper-pagination-bullet:nth-child(n + 6) {
+  display: none;
+}
+
 /* ===== Small Mobile (up to 480px) ===== */
 @media (max-width: 480px) {
   .mySwiper {

@@ -14,7 +14,7 @@
 
 /* Header Styles - Fixed height */
 .explorer-header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(120deg, #123b59 0%, #176b60 58%, #d49b3c 150%);
   color: white;
   padding: 16px 24px;
   display: flex;
@@ -71,6 +71,10 @@
   opacity: 0.9;
   flex-shrink: 0;
 }
+
+.header-eyebrow { display: block; margin-bottom: 4px; color: #f5d995; font-size: 9px; font-weight: 800; letter-spacing: .14em; }
+.header-content h2 { margin: 0; }
+.header-content p { margin: 4px 0 0; color: rgba(255,255,255,.78); font-size: 11px; }
 
 .explorer-header h2 {
   margin: 0;
@@ -151,7 +155,7 @@
 
 /* Breadcrumb Styles */
 .breadcrumb {
-  background: linear-gradient(to right, #f8fafc, #f1f5f9);
+  background: #f7faf9;
   padding: 12px 24px;
   border-bottom: 1px solid #e2e8f0;
   flex-shrink: 0;
@@ -207,11 +211,19 @@
 
 .content-pane {
   padding: 20px;
+  align-content: start;
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
   gap: 16px;
   min-height: min-content;
 }
+
+.content-summary { grid-column: 1 / -1; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 2px 4px 6px; }
+.content-summary > div { display: flex; flex-direction: column; gap: 3px; }
+.summary-label { color: #839690; font-size: 9px; font-weight: 800; letter-spacing: .13em; }
+.content-summary strong { color: #173b3b; font-size: 15px; }
+.summary-hint { color: #81928e; font-size: 11px; }
+.summary-hint i { margin-right: 5px; color: #197c6b; }
 
 /* Loading State */
 .loading-state {
@@ -284,12 +296,12 @@
 .explorer-item {
   background: white;
   border: 1px solid #e2e8f0;
-  border-radius: 10px;
+  border-radius: 14px;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   cursor: pointer;
   overflow: hidden;
   position: relative;
-  min-height: 100px;
+  min-height: 122px;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -319,7 +331,7 @@
 
 /* Folder Styles */
 .folder {
-  padding: 20px;
+  padding: 22px;
   display: flex;
   align-items: center;
   gap: 14px;
@@ -329,8 +341,10 @@
 
 .folder-icon {
   position: relative;
-  width: 44px;
-  height: 44px;
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  background: #fff5df;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -338,7 +352,7 @@
 }
 
 .folder-icon i {
-  font-size: 2.2rem;
+  font-size: 2.35rem;
   transition: all 0.3s ease;
   position: absolute;
 }
@@ -370,6 +384,9 @@
   transition: all 0.3s ease;
   flex-shrink: 0;
 }
+
+.item-info .name { color: #173b3b; font-size: 14px; font-weight: 700; line-height: 1.3; }
+.item-info .type { display: inline-block; margin-top: 5px; padding: 3px 8px; border-radius: 999px; color: #197c6b; background: #e6f5ef; font-size: 10px; font-weight: 700; }
 
 .folder:hover .folder-arrow {
   color: #667eea;

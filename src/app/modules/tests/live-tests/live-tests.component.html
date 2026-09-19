@@ -1,7 +1,15 @@
 
 <div class="live-tests-container">
   <div class="header">
-    <div><span class="page-eyebrow">{{ isAdmin ? 'TEST ADMINISTRATION' : 'PRELIMS PREPARATION' }}</span><h1>{{ isAdmin ? 'Manage Tests' : 'Prelims Tests' }}</h1><p>{{ isAdmin ? 'Create, review and manage your test library.' : 'Build speed and confidence with focused practice.' }}</p></div>
+    <div class="header-copy">
+      <span class="page-eyebrow">{{ isAdmin ? 'TEST ADMINISTRATION' : 'PRELIMS PREPARATION' }}</span>
+      <h1>{{ isAdmin ? 'Manage Tests' : 'Prelims Tests' }}</h1>
+      <p>{{ isAdmin ? 'Create, review and manage your test library.' : 'Build speed and confidence with focused practice.' }}</p>
+      <div class="header-stats" *ngIf="!isAdmin">
+        <span><strong>{{ tests().length }}</strong> available tests</span>
+        <span><strong>{{ completedTestsCount }}</strong> completed</span>
+      </div>
+    </div>
     <div class="header-mark"><mat-icon>bolt</mat-icon></div>
     <button *ngIf="isAdmin" mat-raised-button color="primary" (click)="openCreateTestDialog()">
       <mat-icon>add</mat-icon>
@@ -9,7 +17,12 @@
     </button>
   </div>
 
-  <div class="test-filters"><label><span>Search tests</span><input aria-label="Search tests" placeholder="Find a test" [(ngModel)]="search"></label><label><span>Progress</span><select aria-label="Test progress" [(ngModel)]="testFilter"><option value="all">All tests</option><option value="completed">Completed</option><option value="not-started">Not started</option></select></label><label><span>Sort by</span><select aria-label="Sort tests" [(ngModel)]="sortOrder"><option value="newest">Newest first</option><option value="oldest">Oldest first</option></select></label><strong>{{ filteredTests.length }} tests</strong></div>
+  <div class="test-filters">
+    <label class="search-field"><span>Search tests</span><div class="input-wrap"><input aria-label="Search tests" placeholder="Find a test" [(ngModel)]="search"></div></label>
+    <label><span>Progress</span><select aria-label="Test progress" [(ngModel)]="testFilter"><option value="all">All tests</option><option value="completed">Completed</option><option value="not-started">Not started</option></select></label>
+    <label><span>Sort by</span><select aria-label="Sort tests" [(ngModel)]="sortOrder"><option value="newest">Newest first</option><option value="oldest">Oldest first</option></select></label>
+    <strong>{{ filteredTests.length }} {{ filteredTests.length === 1 ? 'test' : 'tests' }}</strong>
+  </div>
   <p *ngIf="!loading() && tests().length && !filteredTests.length">No tests match your filters.</p>
   <div *ngIf="loading()" class="loading">
     <mat-spinner></mat-spinner>
@@ -18,31 +31,38 @@
 
   <div class="tests-grid" *ngIf="!loading() && tests().length > 0">
     <mat-card *ngFor="let test of filteredTests" class="test-card">
+      <div class="card-accent"></div>
           <mat-card-header>
-            <span class="test-card-kicker"><mat-icon>calendar_today</mat-icon>{{ test.startTime | date:'dd MMM yyyy' }}</span>
+            <span *ngIf="isAdmin" class="test-card-kicker"><mat-icon>calendar_today</mat-icon>{{ test.startTime | date:'dd MMM yyyy' }}</span>
         <mat-card-title>{{ test.title }}</mat-card-title>
         <mat-card-subtitle>
-          <div>Starts: {{ test.startTime | date:'medium' }}</div>
-          <div>Ends: {{ test.endTime | date:'medium' }}</div>
-          <div>Duration: {{ test.duration }} minutes</div>
-          <div *ngIf="!isAdmin" [class.available]="canStartTest(test)" [class.ended]="!canStartTest(test)">
-            Status: {{ canStartTest(test) ? 'Available' : 'Not Available' }}
+          <div class="schedule-row"><span><mat-icon>event</mat-icon><b>Starts:</b> {{ test.startTime | date:'dd MMM yyyy, h:mm a' }}</span></div>
+          <div class="schedule-row"><span><mat-icon>event_available</mat-icon><b>Ends:</b> {{ test.endTime | date:'dd MMM yyyy, h:mm a' }}</span></div>
+          <div class="duration-row"><mat-icon>timer</mat-icon>{{ test.duration }} minutes</div>
+          <div *ngIf="!isAdmin" class="availability-row" [class.available]="canStartTest(test)" [class.ended]="!canStartTest(test)">
+            <mat-icon>{{ canStartTest(test) ? 'check_circle' : 'lock_clock' }}</mat-icon><span>{{ canStartTest(test) ? 'Available now' : 'Not available yet' }}</span>
           </div>
         </mat-card-subtitle>
       </mat-card-header>
       <mat-card-content>
-        <p><strong>Desc:</strong> {{ test.description }}</p>
-        <p><strong>Total Questions:</strong> {{ test.questionUids?.length || test.totalQuestions }}</p>
-        <p><strong>Marks Per Question:</strong> {{ test.marksPerQuestion }}</p>
-        <p><strong>Negative Marks:</strong> {{ test.negativeMarks }}</p>
-        <p><strong>Max Marks:</strong> {{ (test.marksPerQuestion * test.questionUids?.length) || (test.marksPerQuestion
-          * test.totalQuestions)}}</p>
+        <p class="description">{{ test.description || 'Focused practice set for your prelims preparation.' }}</p>
+        <div class="test-meta">
+          <span><mat-icon>quiz</mat-icon><b>{{ test.questionUids?.length || test.totalQuestions }}</b> Questions</span>
+          <span><mat-icon>emoji_events</mat-icon><b>{{ (test.marksPerQuestion * test.questionUids?.length) || (test.marksPerQuestion * test.totalQuestions)}}</b> Marks</span>
+          <span><mat-icon>remove_circle_outline</mat-icon>{{ test.negativeMarks }} negative</span>
+        </div>
       </mat-card-content>
       <mat-card-actions align="end">
-        <button *ngIf="!isAdmin" mat-raised-button color="primary" (click)="showTestRules(test)"
-          [disabled]="test.submitted || !canStartTest(test)">
+        <div *ngIf="!isAdmin" class="student-actions">
+          <button mat-stroked-button color="primary" (click)="viewIntroduction(test)">
+            <mat-icon>menu_book</mat-icon>
+            Introduction
+          </button>
+          <button mat-raised-button color="primary" class="start-test-button" (click)="showTestRules(test)"
+            [disabled]="test.submitted || !canStartTest(test)">
           {{ test.submitted ? 'Test Submitted' : 'Start Test' }}
-        </button>
+          </button>
+        </div>
 
         <div *ngIf="isAdmin" class="admin-actions">
           <!-- Download PDF dropdown -->
@@ -66,6 +86,10 @@
           <button mat-button color="primary" (click)="editTest(test)">
             <mat-icon>edit</mat-icon>
             Edit/View
+          </button>
+          <button mat-button color="primary" (click)="viewIntroduction(test)">
+            <mat-icon>menu_book</mat-icon>
+            Introduction
           </button>
           <button mat-button color="warn" (click)="deleteTest(test._id)">
             <mat-icon>delete</mat-icon>
@@ -92,6 +116,42 @@
       </mat-card-content>
     </mat-card>
   </div>
+</div>
+
+<!-- Test introduction popup -->
+<div class="introduction-modal-overlay" *ngIf="showIntroductionModal" (click)="closeIntroduction()">
+  <section class="introduction-modal" role="dialog" aria-modal="true" aria-labelledby="introduction-title"
+    (click)="$event.stopPropagation()">
+    <header class="introduction-modal-header">
+      <div class="introduction-heading">
+        <span class="introduction-icon"><mat-icon>menu_book</mat-icon></span>
+        <div>
+          <span class="modal-eyebrow">TEST INFORMATION</span>
+          <h2 id="introduction-title">{{ introductionTest?.title }}</h2>
+        </div>
+      </div>
+      <button mat-icon-button aria-label="Close introduction" (click)="closeIntroduction()">
+        <mat-icon>close</mat-icon>
+      </button>
+    </header>
+    <div class="introduction-modal-content">
+      <div *ngIf="introductionTest?.introPage; else noIntroduction" class="introduction-copy"
+        [innerHTML]="introductionTest?.introPage"></div>
+      <ng-template #noIntroduction>
+        <div class="empty-introduction">
+          <mat-icon>description</mat-icon>
+          <h3>No introduction available</h3>
+          <p>This test does not have introduction instructions yet.</p>
+        </div>
+      </ng-template>
+    </div>
+    <footer class="introduction-modal-footer">
+      <button mat-raised-button color="primary" (click)="closeIntroduction()">
+        <mat-icon>check</mat-icon>
+        Close
+      </button>
+    </footer>
+  </section>
 </div>
 
 <!-- Rules & Intro Modal -->

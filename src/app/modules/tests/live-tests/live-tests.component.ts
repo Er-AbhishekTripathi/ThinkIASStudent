@@ -46,6 +46,7 @@ export class LiveTestsComponent implements OnInit {
   tests = signal<any[]>([]);
   search='';testFilter='all';sortOrder='newest';
   get filteredTests(){return this.tests().filter(test=>(this.testFilter==='all'||(this.testFilter==='completed'?test.submitted:!test.submitted))&&[test.title,test.description].join(' ').toLowerCase().includes(this.search.toLowerCase())).sort((a,b)=>(+new Date(b.startTime)-+new Date(a.startTime))*(this.sortOrder==='newest'?1:-1));}
+  get completedTestsCount(){return this.tests().filter(test => test.submitted).length;}
   loading = signal(false);
   pdfDownloading = signal<string | null>(null);
   isAdmin = this.authService.currentUser()?.role === 'admin';
@@ -57,6 +58,8 @@ export class LiveTestsComponent implements OnInit {
   agreeToRules = false;
   agreeToIntro = false; // New flag for intro page agreement
   selectedTest: any = null;
+  showIntroductionModal = false;
+  introductionTest: any = null;
 
   ngOnInit() {
     this.loadTests();
@@ -197,6 +200,16 @@ export class LiveTestsComponent implements OnInit {
 
   viewResults(testId: string) {
     this.router.navigate(['/prelims-results'], { queryParams: { testId } });
+  }
+
+  viewIntroduction(test: any) {
+    this.introductionTest = test;
+    this.showIntroductionModal = true;
+  }
+
+  closeIntroduction() {
+    this.showIntroductionModal = false;
+    this.introductionTest = null;
   }
 
   // PDF Download functionality

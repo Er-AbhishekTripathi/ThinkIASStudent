@@ -57,9 +57,7 @@ export class HeaderComponent implements OnInit, AfterViewInit, OnDestroy {
   programs: any[] = [];
   programGroups = [
     {label:'Mentorship Program',hi:'मेंटरशिप प्रोग्राम',categories:['Mentorship Course','Optional Mentorship Course']},
-    {label:'Test Series',hi:'टेस्ट सीरीज',categories:['Test Series','Optional Test Series']},
-    {label:'Prelims Program',hi:'प्रारंभिक परीक्षा प्रोग्राम',categories:['Prelims Program']},
-    {label:'Interview Program',hi:'साक्षात्कार प्रोग्राम',categories:['Interview Program']}
+    {label:'Test Series',hi:'टेस्ट सीरीज',categories:['Test Series','Optional Test Series']}
   ];
   groupPrograms(group:any){return this.programs.filter(p=>group.categories.includes(p.programCategory));}
   announcements: any[] = [];

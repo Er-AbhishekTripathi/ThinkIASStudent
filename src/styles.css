@@ -1,3 +1,8 @@
+/* Keep Angular Material dialogs above the fixed/sticky application header. */
+.cdk-overlay-container,
+.cdk-global-overlay-wrapper {
+	z-index: 3000 !important;
+}
 /* Global Styles */
 * {
   margin: 0;
@@ -795,6 +800,58 @@ app-slider{
 	display: inline-block;
 	padding-top: 40px;
 	padding-bottom: 60px;
+}
+
+.about .main_heading {
+	padding-top: 8px;
+}
+
+.about .main_heading > p:first-child span {
+	border: 0;
+	padding: 7px 13px;
+	color: #17683f;
+	background: #e8f6ef;
+	font-family: 'Outfit', sans-serif;
+	font-size: 11px;
+	font-weight: 800;
+	letter-spacing: .12em;
+	text-transform: uppercase;
+}
+
+.about .sub_heading {
+	max-width: 560px;
+	margin-top: 14px;
+	font-family: 'Outfit', sans-serif;
+	font-size: clamp(28px, 3vw, 40px);
+	font-weight: 700;
+	line-height: 1.12;
+	letter-spacing: 0;
+}
+
+.about .main_heading > p.en,
+.about .main_heading > p.hi {
+	max-width: 590px;
+	color: #526579;
+	font-family: 'Poppins', sans-serif;
+	font-size: 14px;
+	line-height: 1.75;
+}
+
+.about .main_heading > p.en b,
+.about .main_heading > p.hi b {
+	color: #17683f;
+	font-weight: 700;
+}
+
+.about .about_news p {
+	font-family: 'Outfit', sans-serif;
+	font-size: 16px;
+	letter-spacing: .01em;
+}
+
+@media screen and (max-width: 767px) {
+	.about .main_heading.ps-5 { padding-left: 0 !important; }
+	.about .sub_heading { font-size: 30px; }
 }
 .support.support_call .icon {
 	background: #d7ffda;

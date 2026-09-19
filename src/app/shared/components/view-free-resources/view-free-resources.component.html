@@ -8,7 +8,7 @@
     </button>
     <div class="header-content">
       <i class="fa" [class]="getHeaderIcon()"></i>
-      <h2>{{ getResourceTypeName() }} Explorer</h2>
+      <div><span class="header-eyebrow">THINKCIVIL IAS LIBRARY</span><h2>{{ getResourceTypeName() }} Explorer</h2><p>Explore curated study material for your preparation</p></div>
     </div>
     
     <!-- Language Selector -->
@@ -36,6 +36,10 @@
 
   <div class="explorer-window">
     <div class="content-pane">
+      <div class="content-summary" *ngIf="!isLoading && currentItems.length">
+        <div><span class="summary-label">AVAILABLE MATERIAL</span><strong>{{ currentItems.length }} {{ currentItems.length === 1 ? 'item' : 'items' }}</strong></div>
+        <span class="summary-hint"><i class="fa fa-hand-pointer-o"></i> Select a folder to continue</span>
+      </div>
       <!-- Loading State -->
       <div *ngIf="isLoading" class="loading-state">
         <div class="loading-spinner"></div>

@@ -160,7 +160,7 @@
       </div>
 
       <div class="action-buttons">
-        <button mat-raised-button color="primary" class="submit-btn" (click)="showSubmitConfirmation()"
+        <button type="button" mat-raised-button color="primary" class="submit-btn" (click)="submitTest()"
                 [disabled]="isTestSubmitted || showSubmitDialog || isSubmitting">
           <mat-icon>send</mat-icon>
           <span *ngIf="!isSubmitting">{{ 'Submit Test' | t:'टेस्ट जमा करें' }}</span>
