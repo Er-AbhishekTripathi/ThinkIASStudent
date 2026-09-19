@@ -1,8 +1,8 @@
 <app-header></app-header>
 
 <div class="free-quiz-container">
-    <!-- Header -->
-    <div class="quiz-header">
+    <!-- Header (hidden once the exam is in progress) -->
+    <div class="quiz-header" *ngIf="!currentQuiz() || quizCompleted()">
         <h1>Quiz</h1>
         <p>Test your knowledge with our free quizzes!</p>
     </div>
@@ -116,7 +116,7 @@
     </div>
 
     <!-- Quiz Taking Interface -->
-    <div *ngIf="currentQuiz() && !quizCompleted() && !showUserInfoForm()" class="quiz-taking">
+    <div *ngIf="currentQuiz() && !quizCompleted() && !showUserInfoForm() && !submissionError()" class="quiz-taking">
         <!-- Loading Quiz -->
         <div *ngIf="quizLoading()" class="quiz-loading">
             <mat-spinner diameter="50"></mat-spinner>
@@ -248,6 +248,20 @@
         </div>
     </div>
 </div>
+    </div>
+
+    <div *ngIf="submissionError()" class="submission-error-card">
+        <div class="submission-error-icon">
+            <mat-icon>task_alt</mat-icon>
+        </div>
+        <span class="submission-error-eyebrow">Submission status</span>
+        <h2>Quiz Already Submitted</h2>
+        <p class="submission-error-message">{{ submissionError() }}</p>
+        <p class="submission-error-help">Your previous attempt has already been recorded. You can return to the quiz list and choose another quiz.</p>
+        <button mat-raised-button color="primary" (click)="restartQuiz()">
+            <mat-icon>arrow_back</mat-icon>
+            Back to Free Quizzes
+        </button>
     </div>
 
     <!-- Quiz Results -->
@@ -628,3 +642,5 @@
         </mat-card>
     </div>
 </div>
+
+<app-public-footer></app-public-footer>

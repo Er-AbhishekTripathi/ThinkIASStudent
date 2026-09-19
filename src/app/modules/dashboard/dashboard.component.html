@@ -51,7 +51,51 @@
       <div class="section-heading"><div><span class="section-kicker">{{ 'NEXT UP' | t }}</span><h2>{{ 'Upcoming Tests' | t }}</h2></div><a routerLink="/prelims-tests">{{ 'View all' | t }} <mat-icon>arrow_forward</mat-icon></a></div>
       <div class="upcoming-test-list"><article *ngFor="let test of upcomingTests()"><div class="upcoming-icon"><mat-icon>quiz</mat-icon></div><div class="upcoming-copy"><h3>{{ test.title }}</h3><p>{{ test.startTime | date:'dd MMM yyyy, hh:mm a' }}</p></div><span class="upcoming-duration">{{ test.duration }} min</span></article></div>
     </section>
- <section class="recent-results" *ngIf="recentResults().length"><h2>{{ 'Recent Results' | t }}</h2><div class="results-grid"><mat-card *ngFor="let result of recentResults()"><mat-card-content><h3>{{ result.test?.title }}</h3><p>{{ result.score }}/{{ result.totalMarks }} ({{ result.percentage }}%)</p><button mat-button [routerLink]="['/result-detail', result._id]" [queryParams]="{testId: result.test?._id}">{{ 'View Details' | t }}</button></mat-card-content></mat-card></div></section>
+    <section class="recent-results" *ngIf="recentResults().length">
+      <div class="results-heading">
+        <div>
+          <span class="section-kicker">{{ 'YOUR PROGRESS' | t }}</span>
+          <h2>{{ 'Recent Results' | t }}</h2>
+          <p>{{ 'Review your latest test performance.' | t }}</p>
+        </div>
+        <mat-icon>insights</mat-icon>
+      </div>
+      <div class="results-grid">
+        <mat-card *ngFor="let result of recentResults()" class="result-card">
+          <mat-card-content>
+            <div class="result-card-topline">
+              <span class="result-icon"><mat-icon>assignment_turned_in</mat-icon></span>
+              <span class="result-label">{{ 'Completed test' | t }}</span>
+              <span class="result-percentage">{{ result.percentage }}%</span>
+            </div>
+            <h3>{{ result.test?.title }}</h3>
+            <div class="result-score-row">
+              <strong>{{ result.score }}/{{ result.totalMarks }}</strong>
+              <span>{{ 'Score achieved' | t }}</span>
+            </div>
+            <div class="result-progress" aria-hidden="true">
+              <span [style.width.%]="result.percentage"></span>
+            </div>
+            <button mat-button [routerLink]="['/result-detail', result._id]" [queryParams]="{testId: result.test?._id}">
+              {{ 'View Details' | t }} <mat-icon>arrow_forward</mat-icon>
+            </button>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </section>
+    <section class="performance-trend" *ngIf="recentResults().length">
+      <div class="results-heading">
+        <div>
+          <span class="section-kicker">{{ 'PERFORMANCE' | t }}</span>
+          <h2>{{ 'Performance Trend' | t }}</h2>
+          <p>{{ 'Score to total-marks ratio across attempted tests.' | t }}</p>
+        </div>
+        <mat-icon>show_chart</mat-icon>
+      </div>
+      <div class="performance-chart-wrap">
+        <canvas #performanceChart aria-label="Performance trend chart"></canvas>
+      </div>
+    </section>
     <section class="plans-section">
       <div class="dashboard-section-heading"><div><span class="section-kicker">{{ (currentUser()?.type === 'fresh' ? 'START STRONG' : 'LEVEL UP') | t }}</span><h2>{{ (currentUser()?.type === 'fresh' ? 'Choose Your Success Plan' : 'Upgrade Plan') | t }}</h2><p>{{ 'Choose a focused plan that matches your preparation goals.' | t }}</p></div><mat-icon>workspace_premium</mat-icon></div>
       <div class="plans-grid">
