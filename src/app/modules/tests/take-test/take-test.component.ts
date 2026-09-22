@@ -74,6 +74,8 @@ export class TakeTestComponent implements OnInit, OnDestroy, AfterViewInit {
 
   testForm: FormGroup;
   timer: any;
+  countdownTimer: any;
+  countdownLabel = signal('');
   startTime: Date = new Date();
   selectedLanguage: 'english' | 'hindi' = localStorage.getItem('preferredLanguage') === 'hi' ? 'hindi' : 'english';
 
@@ -225,6 +227,12 @@ export class TakeTestComponent implements OnInit, OnDestroy, AfterViewInit {
         
         console.log('Test loaded successfully:', test);
         this.test.set(test);
+        if ((test as any).waiting) {
+          this.loading.set(false);
+          this.startCountdown((test as any).startTime);
+          this.cdr.detectChanges();
+          return;
+        }
         this.testDuration = test.duration * 60;
         this.initializeForm(test);
         
@@ -392,6 +400,21 @@ export class TakeTestComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   // Timer Methods
+  startCountdown(startTime: string) {
+    const tick = () => {
+      const ms = Math.max(0, +new Date(startTime) - Date.now());
+      const s = Math.floor(ms / 1000);
+      const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), sec = s % 60;
+      this.countdownLabel.set(`${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`);
+      if (ms <= 0) {
+        clearInterval(this.countdownTimer);
+        this.loadTest(this.testId);
+      }
+    };
+    tick();
+    this.countdownTimer = setInterval(tick, 1000);
+  }
+
   startTimer() {
     if (this.timer) clearInterval(this.timer);
     
@@ -670,6 +693,10 @@ export class TakeTestComponent implements OnInit, OnDestroy, AfterViewInit {
     if (this.timer) {
       clearInterval(this.timer);
       this.timer = null;
+    }
+    if (this.countdownTimer) {
+      clearInterval(this.countdownTimer);
+      this.countdownTimer = null;
     }
     
     // Unsubscribe from observables

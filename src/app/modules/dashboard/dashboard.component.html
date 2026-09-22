@@ -40,7 +40,7 @@
           <span><strong>{{ 'Study Resources' | t }}</strong><small>{{ 'Open notes and learning material' | t }}</small></span>
           <mat-icon class="shortcut-arrow">arrow_forward</mat-icon>
         </a>
-        <a class="shortcut-card" routerLink="/pre-session">
+        <a class="shortcut-card" [routerLink]="currentUser()?.type === 'mains' ? '/mains-session' : '/pre-session'">
           <span class="shortcut-icon session-icon"><mat-icon>video_camera_front</mat-icon></span>
           <span><strong>{{ 'Live Sessions' | t }}</strong><small>{{ 'Join classes and scheduled sessions' | t }}</small></span>
           <mat-icon class="shortcut-arrow">arrow_forward</mat-icon>

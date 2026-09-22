@@ -108,6 +108,21 @@ export class ExamMonitoringComponent implements OnInit, OnDestroy {
     }
   }
 
+  deleteSession(session: ProctorSession, event?: Event): void {
+    event?.stopPropagation();
+    if (!confirm(`Delete this monitoring session for ${this.studentName(session)}? This cannot be undone.`)) return;
+    this.http.delete(`${environment.apiUrl}/proctoring/admin/sessions/${session._id}`).subscribe({
+      next: () => {
+        if (this.selected?._id === session._id) {
+          this.stopLive();
+          this.selected = undefined;
+        }
+        this.load(false);
+      },
+      error: err => { this.error = err.error?.message || 'Unable to delete session'; }
+    });
+  }
+
   stopLive(): void {
     const sessionId = this.selected?._id;
     const requestId = this.requestId;

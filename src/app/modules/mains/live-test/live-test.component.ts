@@ -194,7 +194,7 @@ export interface TestParticipation {
                         <i class="fas fa-check-circle"></i> {{ isHindiMode ? 'जमा किया' : 'Submitted' }}
                       </div>
                       <div *ngIf="test.status === 'upcoming'" class="upcoming-text">
-                        <i class="fas fa-hourglass-half"></i> {{ getUpcomingMessage(test) }}
+                        <i class="fas fa-hourglass-half"></i> {{ getUpcomingMessage(test) }} · {{ getFormattedTimeRemaining(test) }}
                       </div>
                       <div *ngIf="test.status === 'expired'" class="expired-text">
                         <i class="fas fa-ban"></i> {{ isHindiMode ? 'समाप्त' : 'Expired' }}
@@ -420,7 +420,7 @@ export interface TestParticipation {
             </div>
 
             <p class="privacy-note">
-              🔒 {{ isHindiMode ? 'अपना टेस्ट वाला portal tab चुनें। कैमरा और portal screen दोनों record होकर admin को live दिखाई देंगे।' : 'Select this test portal tab. Your camera and portal screen are recorded together and shown live to the admin.' }}
+              🔒 {{ isHindiMode ? 'कैमरा और पोर्टल स्क्रीन अपने आप रिकॉर्ड होंगी। अनुमति एक बार दें — पोर्टल में कहीं भी जाएँ, रिकॉर्डिंग चलती रहेगी।' : 'Camera and this portal tab are recorded automatically. Allow once — recording continues anywhere you go in the portal.' }}
             </p>
           </div>
 
@@ -702,7 +702,7 @@ export class LiveTestComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    this.stopCamera();
+    this.detachLocalCamera();
     this.clearTimer();
   }
 
@@ -821,7 +821,8 @@ export class LiveTestComponent implements OnInit, OnDestroy {
     if (!test) return false;
     const now = new Date();
     const start = new Date(test.startDateTime);
-    const end = new Date(test.endDateTime);
+    const end = new Date((test as any).reopenUntil || test.endDateTime);
+    if ((test as any).reopened || (test as any).reopenUntil) return now <= end;
     return now >= start && now <= end;
   }
 
@@ -838,7 +839,7 @@ export class LiveTestComponent implements OnInit, OnDestroy {
   getTimeRemaining(test: LiveTest): number {
     const now = new Date();
     const start = new Date(test.startDateTime);
-    const end = new Date(test.endDateTime);
+    const end = new Date((test as any).reopenUntil || test.endDateTime);
     
     let remaining = 0;
     if (now < start) {
@@ -882,7 +883,7 @@ export class LiveTestComponent implements OnInit, OnDestroy {
     this.clearTimer();
     const now = new Date();
     const start = new Date(test.startDateTime);
-    const end = new Date(test.endDateTime);
+    const end = new Date((test as any).reopenUntil || test.endDateTime);
 
     if (now < start) {
       this.totalDuration = (start.getTime() - now.getTime()) / 1000;
@@ -943,11 +944,12 @@ export class LiveTestComponent implements OnInit, OnDestroy {
 
     this.selectedTest = test;
     this.flowStep = 1;
-    this.cameraActive = false;
-    this.stopCamera();
+    this.cameraActive = this.proctoring.active() && this.proctoring.currentTestId === test._id;
+    if (this.proctoring.active() && this.proctoring.currentTestId !== test._id) this.stopCamera();
 
     this.liveTestFlowRef = this.dialog.open(this.liveTestFlowModal, {
-      width: '550px',
+      width: 'min(550px, 96vw)',
+      maxWidth: '96vw',
       panelClass: 'custom-dialog',
       disableClose: true
     });
@@ -955,15 +957,17 @@ export class LiveTestComponent implements OnInit, OnDestroy {
 
   closeLiveTestFlow() {
     if (this.isSubmitting) return;
-    this.stopCamera();
+    this.detachLocalCamera();
     if (this.liveTestFlowRef) {
       this.liveTestFlowRef.close();
-      this.selectedTest = null;
     }
   }
 
   goToFlowStep(step: number) {
     this.flowStep = step;
+    if (step === 2 && !this.proctoring.active() && !this.proctoring.starting()) {
+      setTimeout(() => this.startCamera(), 120);
+    }
   }
 
   // ============================================
@@ -971,9 +975,9 @@ export class LiveTestComponent implements OnInit, OnDestroy {
   // ============================================
   openGoToLiveTestModal() {
     if (!this.selectedTest) return;
-    if (!this.proctoring.active() || !this.proctoring.screenActive()) {
+    if (!this.proctoring.active()) {
       this.snackBar.open(
-        this.isHindiMode ? 'लाइव टेस्ट के लिए कैमरा और स्क्रीन शेयरिंग चालू रखें।' : 'Camera and screen sharing must remain active for the live test.',
+        this.isHindiMode ? 'लाइव टेस्ट के लिए रिकॉर्डिंग चालू रखें।' : 'Keep exam recording on for the live test.',
         'Close',
         { duration: 5000 }
       );
@@ -982,7 +986,8 @@ export class LiveTestComponent implements OnInit, OnDestroy {
     
     this.startTimer(this.selectedTest);
     this.goToLiveTestDetailRef = this.dialog.open(this.goToLiveTestDetailModal, {
-      width: '750px',
+      width: 'min(750px, 96vw)',
+      maxWidth: '96vw',
       maxHeight: '90vh',
       panelClass: 'custom-dialog',
       disableClose: true
@@ -1028,7 +1033,8 @@ export class LiveTestComponent implements OnInit, OnDestroy {
     this.selectedFile = null;
 
     this.submissionDialogRef = this.dialog.open(this.submissionModal, {
-      width: '550px',
+      width: 'min(550px, 96vw)',
+      maxWidth: '96vw',
       panelClass: 'custom-dialog',
       disableClose: true
     });
@@ -1166,30 +1172,40 @@ export class LiveTestComponent implements OnInit, OnDestroy {
       this.snackBar.open('Please retry saving the previous recording first.', 'Close', { duration: 5000 });
       return;
     }
+    if (this.proctoring.starting()) return;
+    if (this.proctoring.active()) {
+      this.cameraActive = true;
+      await new Promise(resolve => setTimeout(resolve, 50));
+      if (this.videoElement) this.proctoring.bindPreview(this.videoElement.nativeElement);
+      return;
+    }
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } },
-        audio: true
-      });
+      let stream: MediaStream;
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: true });
+      } catch {
+        stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+      }
 
       this.mediaStream = stream;
       this.cameraActive = true;
+      await new Promise(resolve => setTimeout(resolve, 50));
 
       if (this.videoElement) {
         this.videoElement.nativeElement.srcObject = stream;
         await this.videoElement.nativeElement.play();
-        if (this.selectedTest) await this.proctoring.startLiveTest(this.selectedTest._id, stream, this.videoElement.nativeElement);
       }
+      if (this.selectedTest) await this.proctoring.startLiveTest(this.selectedTest._id, stream, this.videoElement?.nativeElement);
 
       this.snackBar.open(
-        this.isHindiMode ? 'कैमरा सक्रिय किया गया' : 'Camera activated',
+        this.isHindiMode ? 'लाइव रिकॉर्डिंग चालू है।' : 'Live recording is on.',
         'Close',
-        { duration: 2000 }
+        { duration: 2500 }
       );
     } catch (error) {
       console.error('Camera error:', error);
       this.snackBar.open(
-        this.isHindiMode ? 'कैमरा एक्सेस नहीं हो पा रहा। कृपया अनुमति जांचें।' : 'Unable to access camera. Please check permissions.',
+        this.isHindiMode ? 'कैमरा / स्क्रीन अनुमति नहीं मिली। मोबाइल पर कैमरा अनुमति दें।' : 'Unable to access camera or screen. On mobile, allow camera permission.',
         'Close',
         { duration: 5000 }
       );
@@ -1197,17 +1213,15 @@ export class LiveTestComponent implements OnInit, OnDestroy {
     }
   }
 
+  detachLocalCamera() {
+    this.cameraActive = false;
+    this.mediaStream = null;
+    if (this.videoElement) this.videoElement.nativeElement.srcObject = null;
+  }
+
   stopCamera() {
     if (this.proctoring.active()) this.proctoring.stopWithoutUpload();
-    if (this.mediaStream) {
-      this.mediaStream.getTracks().forEach(track => track.stop());
-      this.mediaStream = null;
-    }
-    this.cameraActive = false;
-
-    if (this.videoElement) {
-      this.videoElement.nativeElement.srcObject = null;
-    }
+    this.detachLocalCamera();
   }
 
   async retryRecording() {
@@ -1238,18 +1252,6 @@ export class LiveTestComponent implements OnInit, OnDestroy {
     }
     if (!this.proctoring.active()) {
       this.snackBar.open(this.isHindiMode ? 'लाइव मॉनिटरिंग आवश्यक है।' : 'Live monitoring connection is required.', 'Close', { duration: 4000 });
-      return;
-    }
-    if (!this.proctoring.active() || !this.proctoring.screenActive()) {
-      this.snackBar.open(
-        this.isHindiMode ? 'उत्तर जमा करने से पहले कैमरा और स्क्रीन शेयरिंग चालू करें।' : 'Camera and screen sharing must be active before submission.',
-        'Close',
-        { duration: 5000 }
-      );
-      return;
-    }
-    if (!this.proctoring.screenActive()) {
-      this.snackBar.open(this.isHindiMode ? 'स्क्रीन शेयरिंग आवश्यक है। कृपया कैमरा दोबारा शुरू करें।' : 'Screen sharing is required. Please restart the camera setup.', 'Close', { duration: 5000 });
       return;
     }
     this.goToFlowStep(3);

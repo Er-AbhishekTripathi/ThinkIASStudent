@@ -27,6 +27,8 @@ export class ProctoringService {
   private livePeer?: RTCPeerConnection;
   private liveRequestId = '';
   private pollingLive = false;
+  private preview?: HTMLVideoElement;
+  currentTestId = '';
   private iceServers: RTCIceServer[] = [{ urls: 'stun:stun.l.google.com:19302' }];
   constructor(private http: HttpClient) {
     this.restorePromise = this.restoreDraft();
@@ -46,13 +48,44 @@ export class ProctoringService {
     } catch { /* In-memory retry remains available if browser storage is unavailable. */ }
   }
 
+  bindPreview(video: HTMLVideoElement) {
+    if (this.preview === video && video.srcObject === this.stream) return;
+    this.preview = video;
+    video.muted = true;
+    video.playsInline = true;
+    if (this.stream) {
+      video.srcObject = this.stream;
+      video.play().catch(() => undefined);
+    }
+  }
+
+  private isMobileDevice(): boolean {
+    return window.matchMedia('(max-width: 1024px), (pointer: coarse)').matches;
+  }
+
+  private async capturePortalScreen(): Promise<MediaStream | null> {
+    const media = navigator.mediaDevices;
+    if (!media?.getDisplayMedia) return null;
+    return media.getDisplayMedia({
+      video: { displaySurface: 'browser', frameRate: { ideal: 15, max: 20 } },
+      audio: true,
+      preferCurrentTab: true,
+      selfBrowserSurface: 'include',
+      surfaceSwitching: 'include'
+    } as DisplayMediaStreamOptions);
+  }
+
   async start(testId: string, preview: HTMLVideoElement): Promise<void> {
     await this.restorePromise;
     if (this.active() || this.starting()) return;
     if (this.pendingRecording()) throw new Error('Please retry the previous recording upload first.');
     this.starting.set(true);
     try {
-      this.stream = await navigator.mediaDevices.getUserMedia({ video: { width: { ideal: 640 }, height: { ideal: 480 } }, audio: true });
+      try {
+        this.stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } }, audio: true });
+      } catch {
+        this.stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+      }
       await this.initializeSession(testId, this.stream, preview, 'Test');
     } catch (error) {
       this.stopWithoutUpload();
@@ -71,37 +104,42 @@ export class ProctoringService {
     catch (error) { this.stopWithoutUpload(); throw error; }
   }
 
-  async startLiveTest(testId: string, cameraStream: MediaStream, preview: HTMLVideoElement): Promise<void> {
+  async startLiveTest(testId: string, cameraStream: MediaStream, preview?: HTMLVideoElement): Promise<void> {
     await this.restorePromise;
+    if (this.active() && this.currentTestId === testId) {
+      if (preview) this.bindPreview(preview);
+      return;
+    }
     if (this.active()) return;
     if (this.pendingRecording()) throw new Error('Please retry the previous recording upload first.');
-    let screenStream: MediaStream;
+    this.starting.set(true);
+    let screenStream: MediaStream | null = null;
     try {
-      screenStream = await navigator.mediaDevices.getDisplayMedia({
-        video: { displaySurface: 'browser', frameRate: { ideal: 15, max: 20 } },
-        audio: true,
-        preferCurrentTab: true,
-        selfBrowserSurface: 'include'
-      } as DisplayMediaStreamOptions);
+      screenStream = await this.capturePortalScreen();
     } catch (error) {
-      cameraStream.getTracks().forEach(track => track.stop());
-      try { await firstValueFrom(this.http.post(`${environment.apiUrl}/proctoring/sessions`, { testId, consent: false, testType: 'LiveTest' })); } catch { /* Preserve the original capture error. */ }
-      throw error;
+      if (!this.isMobileDevice()) {
+        this.starting.set(false);
+        cameraStream.getTracks().forEach(track => track.stop());
+        try { await firstValueFrom(this.http.post(`${environment.apiUrl}/proctoring/sessions`, { testId, consent: false, testType: 'LiveTest' })); } catch { /* Preserve the original capture error. */ }
+        throw error;
+      }
     }
 
-    this.sourceStreams = [cameraStream, screenStream];
+    this.sourceStreams = screenStream ? [cameraStream, screenStream] : [cameraStream];
     this.screenActive.set(true);
-    screenStream.getVideoTracks()[0].addEventListener('ended', () => {
+    screenStream?.getVideoTracks()[0]?.addEventListener('ended', () => {
       this.screenActive.set(false);
       this.violation('screen_share_stopped');
     });
 
     try {
-      const composite = await this.createCompositeStream(screenStream, cameraStream);
-      await this.initializeSession(testId, composite, preview, 'LiveTest');
+      const output = screenStream ? await this.createCompositeStream(screenStream, cameraStream) : cameraStream;
+      await this.initializeSession(testId, output, preview, 'LiveTest');
     } catch (error) {
       this.stopWithoutUpload();
       throw error;
+    } finally {
+      this.starting.set(false);
     }
   }
 
@@ -140,10 +178,12 @@ export class ProctoringService {
     return output;
   }
 
-  private async initializeSession(testId: string, stream: MediaStream, preview: HTMLVideoElement, testType: 'Test'|'LiveTest'): Promise<void> {
+  private async initializeSession(testId: string, stream: MediaStream, preview: HTMLVideoElement | undefined, testType: 'Test'|'LiveTest'): Promise<void> {
     this.stream = stream;
-    preview.srcObject = stream;
-    await preview.play();
+    this.currentTestId = testId;
+    if (preview) this.bindPreview(preview);
+    else if (this.preview) this.bindPreview(this.preview);
+    if (this.preview) await this.preview.play().catch(() => undefined);
     const response = await firstValueFrom(this.http.post<any>(`${environment.apiUrl}/proctoring/sessions`, { testId, consent: true, testType }));
     this.sessionId = response.data._id;
     await this.loadIceConfig();
@@ -155,10 +195,10 @@ export class ProctoringService {
     this.recorder.start(5000);
     this.active.set(true);
     this.heartbeatTimer = window.setInterval(() => this.heartbeat(), 30000);
-    this.snapshotTimer = window.setInterval(() => this.captureSnapshot(preview), 30000);
+    this.snapshotTimer = window.setInterval(() => this.captureSnapshot(), 30000);
     this.livePollTimer = window.setInterval(() => this.pollLiveOffer(), 2000);
     this.pollLiveOffer();
-    await this.captureSnapshot(preview);
+    await this.captureSnapshot();
   }
 
   violation(type: string) {
@@ -262,8 +302,8 @@ export class ProctoringService {
     this.livePollTimer = undefined;
     this.closeLivePeer();
   }
-  private async captureSnapshot(video: HTMLVideoElement) {
-    if (!video.videoWidth || !this.sessionId) return;
+  private async captureSnapshot(video: HTMLVideoElement = this.preview!) {
+    if (!video?.videoWidth || !this.sessionId) return;
     const canvas = document.createElement('canvas'); canvas.width = 480; canvas.height = Math.round(480 * video.videoHeight / video.videoWidth);
     canvas.getContext('2d')?.drawImage(video, 0, 0, canvas.width, canvas.height);
     const blob = await new Promise<Blob | null>(resolve => canvas.toBlob(resolve, 'image/jpeg', .72));
@@ -281,6 +321,7 @@ export class ProctoringService {
     this.active.set(false);
     this.screenActive.set(false);
     this.sessionId = '';
+    this.currentTestId = '';
     this.chunks = [];
     this.stream = undefined;
     this.sourceStreams = [];

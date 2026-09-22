@@ -1,4 +1,10 @@
-<div class="test-wrapper" *ngIf="test() && !loading()">
+<div class="waiting-overlay" *ngIf="test()?.waiting && !loading()">
+  <h1>{{ test().title }}</h1>
+  <p>Exam starts in</p>
+  <strong>{{ countdownLabel() }}</strong>
+  <span>{{ test().startTime | date:'dd MMM yyyy, h:mm a' }}</span>
+</div>
+<div class="test-wrapper" *ngIf="test() && !loading() && !test()?.waiting">
   <section class="proctor-consent" [class.active]="proctoring.active()">
     <video #proctorPreview muted playsinline aria-label="Your exam camera preview"></video>
     <div><strong>{{ 'Exam monitoring' | t:'परीक्षा निगरानी' }}</strong><span>{{ proctorMessage() | t }}</span><small>{{ 'By enabling, you consent to camera/audio recording and periodic snapshots for exam integrity.' | t:'चालू करने पर आप परीक्षा की निगरानी के लिए कैमरा, ऑडियो रिकॉर्डिंग और समय-समय पर तस्वीरें लेने की सहमति देते हैं।' }}</small></div>

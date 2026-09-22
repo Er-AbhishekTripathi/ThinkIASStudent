@@ -118,12 +118,9 @@ export const routes: Routes = [
   canActivate: [authGuard, roleGuard],
   data: { role: 'student' }
   },
-  {
-  path: 'pre-session', 
-  loadComponent: () => import('./modules/meeting/meeting.component').then(m => m.MeetingComponent),
-  canActivate: [authGuard, roleGuard],
-  data: { role: 'student' }
-  },
+  {path: 'pre-session', loadComponent: () => import('./modules/meeting/meeting.component').then(m => m.MeetingComponent), canActivate: [authGuard, roleGuard], data: { role: 'student', audience: 'pre' }},
+  {path: 'mains-session', loadComponent: () => import('./modules/meeting/meeting.component').then(m => m.MeetingComponent), canActivate: [authGuard, roleGuard], data: { role: 'student', audience: 'mains' }},
+  {path: 'support-tickets', loadComponent: () => import('./modules/support/support-tickets.component').then(m => m.SupportTicketsComponent), canActivate: [authGuard]},
   {
   path: 'my-profile', 
   loadComponent: () => import('./modules/dashboard/my-profile/my-profile.component').then(m => m.MyProfileComponent),

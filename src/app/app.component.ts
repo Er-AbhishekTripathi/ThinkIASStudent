@@ -2,7 +2,7 @@ import { HeaderComponent } from './modules/homepage/header/header.component';
 import { PublicFooterComponent } from './shared/components/public-footer/public-footer.component';
 import { LanguageToggleComponent } from './shared/i18n/language-toggle.component';
 import { TranslatePipe } from './shared/i18n/translate.pipe';
-import { Component, inject, signal, computed, ViewChild, OnInit, OnDestroy, HostListener, ElementRef } from '@angular/core';
+import { Component, inject, signal, computed, ViewChild, OnInit, OnDestroy, AfterViewChecked, HostListener, ElementRef } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet, NavigationEnd } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { MatToolbarModule } from '@angular/material/toolbar';
@@ -52,7 +52,7 @@ interface User {
   templateUrl: './app.component.html',
   styleUrl: './app.component.css'
 })
-export class AppComponent implements OnInit, OnDestroy {
+export class AppComponent implements OnInit, OnDestroy, AfterViewChecked {
   readonly proctoring = inject(ProctoringService);
   recordingError = '';
   async retryRecording() {
@@ -69,6 +69,7 @@ export class AppComponent implements OnInit, OnDestroy {
   
   @ViewChild('sidenav') sidenav!: MatSidenav;
   @ViewChild('profileContainer') profileContainer!: ElementRef;
+  @ViewChild('shellPreview') shellPreview?: ElementRef<HTMLVideoElement>;
   
   currentRoute = signal('');
   standalonePublicPage = computed(() => ['homepage','integrated-program','landing-page'].includes((this.currentRoute() || this.router.url).split(/[?#]/)[0].split('/')[1]));
@@ -126,6 +127,11 @@ export class AppComponent implements OnInit, OnDestroy {
         // Close profile dropdown on screen size change
         this.closeProfileDropdown();
       });
+  }
+
+  ngAfterViewChecked() {
+    const video = this.shellPreview?.nativeElement;
+    if (this.proctoring.active() && video) this.proctoring.bindPreview(video);
   }
 
   toggleNotifications() { this.showNotifications.update(value => !value); }
