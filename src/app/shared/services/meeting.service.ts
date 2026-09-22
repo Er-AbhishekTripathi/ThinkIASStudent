@@ -64,9 +64,11 @@ export class MeetingService {
   // Add these methods to your existing meeting.service.ts
 
 // Get meetings for students (view only)
-getStudentMeetings(): Observable<MeetingsResponse> {
+getStudentMeetings(audience?: 'pre' | 'mains'): Observable<MeetingsResponse> {
+  const params = audience ? { audience } : undefined;
   return this.http.get<MeetingsResponse>(`${this.apiUrl}/student`, {
-    headers: this.getHeaders()
+    headers: this.getHeaders(),
+    params
   });
 }
 

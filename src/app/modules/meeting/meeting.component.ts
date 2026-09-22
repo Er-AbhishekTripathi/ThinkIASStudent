@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
 import { Meeting, MeetingService } from '../../shared/services/meeting.service';
 
 @Component({
@@ -11,28 +12,24 @@ import { Meeting, MeetingService } from '../../shared/services/meeting.service';
   styleUrls: ['./meeting.component.css']
 })
 export class MeetingComponent implements OnInit {
-  // Data
   upcomingMeetings: Meeting[] = [];
   completedMeetings: Meeting[] = [];
-  
-  // UI State
   loading = false;
-  
-  // Messages
   infoMessage = '';
   errorMessage = '';
+  audience: 'pre' | 'mains' = 'pre';
   
-  constructor(private meetingService: MeetingService) {}
+  constructor(private meetingService: MeetingService, private route: ActivatedRoute) {}
   
   ngOnInit() {
+    this.audience = this.route.snapshot.data['audience'] === 'mains' ? 'mains' : 'pre';
     this.loadMeetings();
   }
   
-  // Load meetings for students
   loadMeetings() {
     this.loading = true;
     
-    this.meetingService.getStudentMeetings().subscribe({
+    this.meetingService.getStudentMeetings(this.audience).subscribe({
       next: (response) => {
         this.upcomingMeetings = response.upcomingMeetings;
         this.completedMeetings = response.completedMeetings;

@@ -1,5 +1,9 @@
 <ng-container *ngIf="publicLayout() || standalonePublicPage(); else portalLayout"><app-header *ngIf="publicLayout()"></app-header><main><router-outlet></router-outlet></main><app-public-footer *ngIf="publicLayout()"></app-public-footer></ng-container>
 <ng-template #portalLayout>
+<div class="proctor-pip" *ngIf="proctoring.active()">
+  <video #shellPreview muted playsinline autoplay></video>
+  <span>{{ 'Live recording on — continues while you move around the portal' | t }}</span>
+</div>
 <!-- Check for fullscreen mode -->
 <div *ngIf="!fullscreenService.isFullscreen()">
   <div *ngIf="proctoring.pendingRecording()" role="status" style="padding:12px;background:#fff4ce;color:#312800">

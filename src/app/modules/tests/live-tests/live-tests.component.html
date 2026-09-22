@@ -40,7 +40,10 @@
           <div class="schedule-row"><span><mat-icon>event_available</mat-icon><b>Ends:</b> {{ test.endTime | date:'dd MMM yyyy, h:mm a' }}</span></div>
           <div class="duration-row"><mat-icon>timer</mat-icon>{{ test.duration }} minutes</div>
           <div *ngIf="!isAdmin" class="availability-row" [class.available]="canStartTest(test)" [class.ended]="!canStartTest(test)">
-            <mat-icon>{{ canStartTest(test) ? 'check_circle' : 'lock_clock' }}</mat-icon><span>{{ canStartTest(test) ? 'Available now' : 'Not available yet' }}</span>
+            <mat-icon>{{ canStartTest(test) ? 'check_circle' : 'lock_clock' }}</mat-icon>
+            <span *ngIf="canStartTest(test)">Available now</span>
+            <span *ngIf="!canStartTest(test) && countdown(test)">Starts in {{ countdown(test) }}</span>
+            <span *ngIf="!canStartTest(test) && !countdown(test)">Not available</span>
           </div>
         </mat-card-subtitle>
       </mat-card-header>
@@ -59,8 +62,8 @@
             Introduction
           </button>
           <button mat-raised-button color="primary" class="start-test-button" (click)="showTestRules(test)"
-            [disabled]="test.submitted || !canStartTest(test)">
-          {{ test.submitted ? 'Test Submitted' : 'Start Test' }}
+            [disabled]="test.submitted || (!canStartTest(test) && !countdown(test))">
+          {{ test.submitted ? 'Test Submitted' : (countdown(test) ? 'View countdown' : 'Start Test') }}
           </button>
         </div>
 
