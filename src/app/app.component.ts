@@ -72,8 +72,11 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewChecked {
   @ViewChild('shellPreview') shellPreview?: ElementRef<HTMLVideoElement>;
   
   currentRoute = signal('');
-  standalonePublicPage = computed(() => ['homepage','integrated-program','landing-page'].includes((this.currentRoute() || this.router.url).split(/[?#]/)[0].split('/')[1]));
-  publicLayout = computed(() => ['careers-page','programs','program','program-faqs'].includes((this.currentRoute() || this.router.url).split(/[?#]/)[0].split('/')[1]));
+  standalonePublicPage = computed(() => {
+    const segment = this.firstPathSegment(this.currentRoute() || this.router.url);
+    return !segment || ['homepage', 'integrated-program', 'landing-page'].includes(segment);
+  });
+  publicLayout = computed(() => ['careers-page', 'programs', 'program', 'program-faqs'].includes(this.firstPathSegment(this.currentRoute() || this.router.url)));
   isMobile = signal(false);
   sidenavOpen = signal(true);
   showProfileDropdown = signal(false);
@@ -298,6 +301,10 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewChecked {
   showFullscreenHeader(): boolean {
     const route = this.currentRoute();
     return route.includes('/take-test');
+  }
+
+  private firstPathSegment(url: string): string {
+    return (url || '').split(/[?#]/)[0].split('/').filter(Boolean)[0] || '';
   }
 
   logout() {

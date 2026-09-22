@@ -77,11 +77,14 @@ export class HomepageComponent implements OnInit, AfterViewInit, OnDestroy {
     showSplash = true;
     
   ngOnInit(): void {
-    AOS.init({
-      duration: 1000,
-      once: true,
-      offset: 100
-    });
+    try {
+      const aos = (AOS as { default?: { init: Function }; init?: Function }).default || AOS;
+      aos.init?.({
+        duration: 1000,
+        once: true,
+        offset: 100
+      });
+    } catch { /* Homepage still renders if animation library fails to load. */ }
     
     this.checkMobileView();
     this.initializeLanguage();
@@ -106,7 +109,7 @@ export class HomepageComponent implements OnInit, AfterViewInit, OnDestroy {
   }
   
   ngAfterViewInit(): void {
-    AOS.refresh();
+    try { (AOS as { default?: { refresh: Function }; refresh?: Function }).default?.refresh?.() || (AOS as { refresh?: Function }).refresh?.(); } catch { /* ignore */ }
     this.updateLanguageButtons();
   }
   

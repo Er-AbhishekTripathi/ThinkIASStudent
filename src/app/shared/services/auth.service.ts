@@ -59,32 +59,33 @@ export class AuthService {
     this.router.events.pipe(
       filter(event => event instanceof NavigationEnd)
     ).subscribe((event: NavigationEnd) => {
-      const url = event.url;
-      const isAuthPage =
-      //  url.includes('/login') || 
-      //                    url.includes('/register') || 
-      //                    url.includes('/forgot-password') ||
-      //                    url.includes('/reset-password') ||
-                         url.includes('/landing-page') ||
-                         url.includes('/homepage') 
-      this.isOnAuthPageSignal.set(isAuthPage);
+      const path = event.url.split(/[?#]/)[0];
+      const segment = path.split('/').filter(Boolean)[0] || '';
+      const isPublicHome = !segment || segment === 'homepage' || segment === 'landing-page' || segment === 'integrated-program';
+      this.isOnAuthPageSignal.set(isPublicHome);
     });
   }
 
   private loadUserFromStorage() {
-    const token = localStorage.getItem('token');
-    const user = localStorage.getItem('user');
-    const menuItems = localStorage.getItem('menuItems');
+    try {
+      const token = localStorage.getItem('token');
+      const user = localStorage.getItem('user');
+      const menuItems = localStorage.getItem('menuItems');
 
-    if (token && user && menuItems) {
-      this.currentUserSignal.set(JSON.parse(user));
-      this.menuItemsSignal.set(JSON.parse(menuItems));
-    }
+      if (token && user && menuItems) {
+        this.currentUserSignal.set(JSON.parse(user));
+        this.menuItemsSignal.set(JSON.parse(menuItems));
+      }
 
-    // Load OTP status if exists
-    const otpStatus = localStorage.getItem('otpStatus');
-    if (otpStatus) {
-      this.otpStatusSignal.set(JSON.parse(otpStatus));
+      const otpStatus = localStorage.getItem('otpStatus');
+      if (otpStatus) {
+        this.otpStatusSignal.set(JSON.parse(otpStatus));
+      }
+    } catch {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      localStorage.removeItem('menuItems');
+      localStorage.removeItem('otpStatus');
     }
   }
 
