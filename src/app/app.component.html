@@ -23,7 +23,7 @@
       <span class="spacer"></span>
 
       <div class="toolbar-right"><app-language-toggle></app-language-toggle>
-        <div class="notification-container">
+        <div class="notification-container" #notificationContainer>
           <button mat-icon-button (click)="toggleNotifications()" aria-label="Notifications">
             <mat-icon [matBadge]="notificationService.unread()" [matBadgeHidden]="!notificationService.unread()" matBadgeColor="warn">notifications</mat-icon>
           </button>
@@ -113,7 +113,7 @@
                    (openedChange)="onSidenavToggle($event)"
                    class="app-sidenav">
         <mat-nav-list>
-          <ng-container *ngFor="let item of authService.menuItems()">
+          <ng-container *ngFor="let item of navMenuItems()">
             <a *ngIf="!item.children?.length" [routerLink]="item.path"
               routerLinkActive="active-link" class="nav-item" (click)="closeSidenavOnMobile()">
               <mat-icon class="nav-icon">{{ getMenuIcon(item) }}</mat-icon>

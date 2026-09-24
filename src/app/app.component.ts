@@ -69,6 +69,7 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewChecked {
   
   @ViewChild('sidenav') sidenav!: MatSidenav;
   @ViewChild('profileContainer') profileContainer!: ElementRef;
+  @ViewChild('notificationContainer') notificationContainer!: ElementRef;
   @ViewChild('shellPreview') shellPreview?: ElementRef<HTMLVideoElement>;
   
   currentRoute = signal('');
@@ -77,6 +78,7 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewChecked {
     return !segment || ['homepage', 'integrated-program', 'landing-page'].includes(segment);
   });
   publicLayout = computed(() => ['careers-page', 'programs', 'program', 'program-faqs'].includes(this.firstPathSegment(this.currentRoute() || this.router.url)));
+  navMenuItems = computed(() => this.withSeriesMenus(this.authService.menuItems(), this.authService.currentUser()));
   isMobile = signal(false);
   sidenavOpen = signal(true);
   showProfileDropdown = signal(false);
@@ -162,6 +164,11 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewChecked {
         this.profileContainer && 
         !this.profileContainer.nativeElement.contains(event.target)) {
       this.closeProfileDropdown();
+    }
+    if (this.showNotifications() &&
+        this.notificationContainer &&
+        !this.notificationContainer.nativeElement.contains(event.target)) {
+      this.showNotifications.set(false);
     }
   }
 
@@ -305,6 +312,24 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewChecked {
 
   private firstPathSegment(url: string): string {
     return (url || '').split(/[?#]/)[0].split('/').filter(Boolean)[0] || '';
+  }
+
+  private withSeriesMenus(items: MenuItem[], user: { role?: string; type?: string } | null): MenuItem[] {
+    if (user?.role !== 'student') return items;
+    const hasTop = (path: string) => items.some(item => item.path === path);
+    const extras: MenuItem[] = [];
+    if ((user.type === 'pre' || user.type === 'combo') && !hasTop('/prelims-test-series')) {
+      extras.push({ name: 'Prelims Test Series', path: '/prelims-test-series', icon: 'event_note' });
+    }
+    if ((user.type === 'mains' || user.type === 'combo') && !hasTop('/mains-test-series')) {
+      extras.push({ name: 'Mains Test Series', path: '/mains-test-series', icon: 'event_note' });
+    }
+    const withoutNested = items.map(item => !item.children?.length ? item : {
+      ...item,
+      children: item.children.filter(child => child.path !== '/prelims-test-series' && child.path !== '/mains-test-series')
+    });
+    const insertAt = Math.min(1, withoutNested.length);
+    return [...withoutNested.slice(0, insertAt), ...extras, ...withoutNested.slice(insertAt)];
   }
 
   logout() {
