@@ -48,7 +48,7 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  background: rgba(255,255,255,.12);
+  background: #1f8be8;
   padding: 12px 20px;
   border-radius: 12px;
 }
@@ -230,7 +230,17 @@
 }
 
 .detail-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   color: #666;
+}
+
+.detail-label mat-icon {
+  width: 16px;
+  height: 16px;
+  color: #3f51b5;
+  font-size: 16px;
 }
 
 .detail-value {

@@ -116,9 +116,37 @@
 ============================ */
 .main-container {
   flex: 1;
-  height: calc(100vh - 64px);
+  min-height: 0;
+  height: auto;
   display: flex;
   overflow: hidden;
+}
+
+.app-footer {
+  flex: 0 0 auto;
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 22px;
+  border-top: 1px solid #dce4ec;
+  background: #ffffff;
+  color: #64748b;
+  font-size: 0.78rem;
+  line-height: 1.4;
+}
+
+.app-footer strong {
+  color: #2879bd;
+  font-weight: 700;
+}
+
+@media (max-width: 640px) {
+  .app-footer {
+    justify-content: center;
+    padding: 10px 14px;
+    text-align: center;
+  }
 }
 
 /* ============================
@@ -262,6 +290,8 @@
    MAIN CONTENT AREA
 ============================ */
 .content-area {
+  display: flex;
+  flex-direction: column;
   flex: 1;
   /* padding: 1.8rem; */
   background: #f9f9fc;
@@ -632,18 +662,27 @@
    MAIN CONTENT AREA
 ============================ */
 .content-area {
+  display: flex;
+  flex-direction: column;
   flex: 1;
+  min-width: 0;
   background: #f9f9fc;
   overflow-y: auto;
   overflow-x: hidden;
   transition: all 0.3s ease;
-  width: 100%;
+  width: calc(100% - 240px);
+  margin-left: 240px;
   min-height: 100%;
 }
 
 .content-wrapper {
+  flex: 1 0 auto;
   padding: 1.8rem;
-  min-height: 100%;
+  min-height: 0;
+}
+
+.content-area .app-footer {
+  margin: 2rem -1.8rem -1.8rem;
 }
 
 /* ============================

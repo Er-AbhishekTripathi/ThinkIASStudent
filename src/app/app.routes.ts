@@ -87,12 +87,12 @@ export const routes: Routes = [
     canActivate: [authGuard, roleGuard],
     data: { role: 'admin' }
   },
-  {
-    path: 'exam-monitoring',
-    loadComponent: () => import('./modules/admin/exam-monitoring/exam-monitoring.component').then(m => m.ExamMonitoringComponent),
-    canActivate: [authGuard, roleGuard],
-    data: { role: 'admin' }
-  },
+  // {
+  //   path: 'exam-monitoring',
+  //   loadComponent: () => import('./modules/admin/exam-monitoring/exam-monitoring.component').then(m => m.ExamMonitoringComponent),
+  //   canActivate: [authGuard, roleGuard],
+  //   data: { role: 'admin' }
+  // },
     { path: 'view/:type', component: ResourcesViewComponent }, 
     { 
     path: 'syllabus-master', 
