@@ -1,5 +1,5 @@
 
-import { Component, inject, signal, OnInit } from '@angular/core';
+import { Component, inject, signal, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
@@ -36,7 +36,7 @@ import { CreateTestDialogComponent } from '../create-test-dialog/create-test-dia
   templateUrl: './live-tests.component.html',
   styleUrl: './live-tests.component.css'
 })
-export class LiveTestsComponent implements OnInit {
+export class LiveTestsComponent implements OnInit, OnDestroy {
   private authService = inject(AuthService);
   private testService = inject(TestService);
   private dialog = inject(MatDialog);
@@ -44,6 +44,8 @@ export class LiveTestsComponent implements OnInit {
   private router = inject(Router);
 
   tests = signal<any[]>([]);
+  now = Date.now();
+  private clock: ReturnType<typeof setInterval> | null = null;
   search='';testFilter='all';sortOrder='newest';
   get filteredTests(){return this.tests().filter(test=>(this.testFilter==='all'||(this.testFilter==='completed'?test.submitted:!test.submitted))&&[test.title,test.description].join(' ').toLowerCase().includes(this.search.toLowerCase())).sort((a,b)=>(+new Date(b.startTime)-+new Date(a.startTime))*(this.sortOrder==='newest'?1:-1));}
   get completedTestsCount(){return this.tests().filter(test => test.submitted).length;}
@@ -63,6 +65,16 @@ export class LiveTestsComponent implements OnInit {
 
   ngOnInit() {
     this.loadTests();
+    this.clock = setInterval(() => this.now = Date.now(), 1000);
+  }
+  ngOnDestroy() { if (this.clock) clearInterval(this.clock); }
+  countdown(test: any): string {
+    if (!test?.startTime) return '';
+    const ms = +new Date(test.startTime) - this.now;
+    if (ms <= 0) return '';
+    const s = Math.floor(ms / 1000);
+    const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), sec = s % 60;
+    return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
   }
 
   loadTests() {
@@ -137,14 +149,20 @@ export class LiveTestsComponent implements OnInit {
   // }
 
   canStartTest(test: any): boolean {
-  if (!test.startTime || !test.endTime) return false;
-  const now = new Date();
-  const startTime = new Date(test.startTime);
-  const endTime = new Date(test.endTime);
-      return now >= startTime && now <= endTime;
-}
+    if (test.canTake) return true;
+    if (!test.startTime || !test.endTime) return false;
+    const now = new Date();
+    const startTime = new Date(test.startTime);
+    const endTime = new Date(test.reopenUntil || test.endTime);
+    if (test.reopened || test.reopenUntil) return now <= endTime;
+    return now >= startTime && now <= endTime;
+  }
 
   showTestRules(test: any) {
+    if (this.countdown(test)) {
+      this.router.navigate(['/take-test', test._id]);
+      return;
+    }
     if (this.canStartTest(test)) {
       this.selectedTest = test;
       this.showRulesModal = true;

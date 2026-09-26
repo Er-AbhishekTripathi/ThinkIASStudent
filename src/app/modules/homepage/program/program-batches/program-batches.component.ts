@@ -45,17 +45,6 @@ export interface Batch {
   imports: [ProgramFaqsComponent, TranslatePipe, CommonModule, HttpClientModule, FormsModule, RouterModule],
   template: `
     <div class="batches-page">
-      <!-- Back Button -->
-      <div class="back-button-container">
-        <div class="container program-nav">
-          <button class="back-btn" (click)="goBack()">
-            <i class="fas fa-arrow-left"></i>{{ 'Programs' | t }}</button>
-          <span class="program-nav-context" *ngIf="program">
-            {{ program.programCategory | t }}<span class="program-nav-divider">/</span>{{ program.programName | t:program.programNameHindi }}
-          </span>
-        </div>
-      </div>
-
       <!-- Program Header -->
       <div class="program-header" [style.backgroundImage]="'linear-gradient(120deg, #102a43 0%, #1d5374 62%, #198754 100%)'">
         <div class="container">
@@ -131,7 +120,6 @@ export interface Batch {
           </div>
 
           <p role="alert">{{mentorshipError}}</p><section *ngIf="mentorships.length"><h2>Mentorship Program Details</h2><label>Medium<select [(ngModel)]="medium"><option value="">All mediums</option><option value="english">English</option><option value="hindi">Hindi</option></select></label><div style="overflow-x:auto"><table style="width:100%"><thead><tr><th>Program / Batch</th><th>Duration</th><th>Start date</th><th>Medium</th><th>Fee</th><th>Brochure</th></tr></thead><tbody><tr *ngFor="let m of filteredMentorships"><td>{{m.name | t:m.nameHindi}}<p>{{m.batchId?.batchName}}</p></td><td>{{m.duration | t:m.durationHindi}}</td><td>{{m.startDate | date}}</td><td>{{m.medium}}</td><td>{{m.fee | currency:'INR'}}</td><td><a *ngIf="m.brochureEnglish" [href]="m.brochureEnglish" target="_blank" rel="noopener">English</a> <a *ngIf="m.brochureHindi" [href]="m.brochureHindi" target="_blank" rel="noopener">Hindi</a></td></tr></tbody></table></div></section>
-          <app-program-faqs [programId]="programId"></app-program-faqs>
           <!-- Batches Grid -->
           <div *ngIf="!isLoading && !errorMessage && batches.length > 0" class="batches-grid">
             <div class="batch-card" *ngFor="let batch of batches">
@@ -188,6 +176,7 @@ export interface Batch {
           </div>
         </div>
       </div>
+      <app-program-faqs [programId]="programId"></app-program-faqs>
     </div>
   `,
   styleUrls: ['./program-batches.component.css']

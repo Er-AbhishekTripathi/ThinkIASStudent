@@ -13,6 +13,7 @@ import { AuthService } from '../../../shared/services/auth.service';
 import { FreeResourcePublicService } from '../../../shared/services/free-resource-public.service';
 import { SimpleNewsService } from '../../../shared/services/simple-news.service';
 import { UserService } from '../../../shared/services/user.service';
+import { LanguageService } from '../../../shared/i18n/language.service';
 import { ObjectiveSliderComponent } from '../objective-slider/objective-slider.component';
 import { ReviewSliderComponent } from '../review-slider/review-slider.component';
 import { SliderComponent } from '../slider/slider.component';
@@ -52,6 +53,7 @@ export class HeaderComponent implements OnInit, AfterViewInit, OnDestroy {
     private viewContainerRef = inject(ViewContainerRef);
     private authService = inject(AuthService);
     private newsService = inject(SimpleNewsService);
+    private languageService = inject(LanguageService);
 
   private http = inject(HttpClient);
   programs: any[] = [];
@@ -60,6 +62,10 @@ export class HeaderComponent implements OnInit, AfterViewInit, OnDestroy {
     {label:'Test Series',hi:'टेस्ट सीरीज',categories:['Test Series','Optional Test Series']}
   ];
   groupPrograms(group:any){return this.programs.filter(p=>group.categories.includes(p.programCategory));}
+  programDisplayName(program: any): string {
+    if (this.currentLanguage !== 'hi') return program.programName;
+    return program.programNameHindi?.trim() || this.languageService.text(program.programName);
+  }
   announcements: any[] = [];
   announcementCount: number = 0;
   showAnnouncementDialog: boolean = false;

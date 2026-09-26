@@ -2,7 +2,7 @@ import { HeaderComponent } from './modules/homepage/header/header.component';
 import { PublicFooterComponent } from './shared/components/public-footer/public-footer.component';
 import { LanguageToggleComponent } from './shared/i18n/language-toggle.component';
 import { TranslatePipe } from './shared/i18n/translate.pipe';
-import { Component, inject, signal, computed, ViewChild, OnInit, OnDestroy, HostListener, ElementRef } from '@angular/core';
+import { Component, inject, signal, computed, ViewChild, OnInit, OnDestroy, AfterViewChecked, HostListener, ElementRef } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet, NavigationEnd } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { MatToolbarModule } from '@angular/material/toolbar';
@@ -52,7 +52,7 @@ interface User {
   templateUrl: './app.component.html',
   styleUrl: './app.component.css'
 })
-export class AppComponent implements OnInit, OnDestroy {
+export class AppComponent implements OnInit, OnDestroy, AfterViewChecked {
   readonly proctoring = inject(ProctoringService);
   recordingError = '';
   async retryRecording() {
@@ -69,10 +69,16 @@ export class AppComponent implements OnInit, OnDestroy {
   
   @ViewChild('sidenav') sidenav!: MatSidenav;
   @ViewChild('profileContainer') profileContainer!: ElementRef;
+  @ViewChild('notificationContainer') notificationContainer!: ElementRef;
+  @ViewChild('shellPreview') shellPreview?: ElementRef<HTMLVideoElement>;
   
   currentRoute = signal('');
-  standalonePublicPage = computed(() => ['homepage','integrated-program','landing-page'].includes((this.currentRoute() || this.router.url).split(/[?#]/)[0].split('/')[1]));
-  publicLayout = computed(() => ['careers-page','programs','program','program-faqs'].includes((this.currentRoute() || this.router.url).split(/[?#]/)[0].split('/')[1]));
+  standalonePublicPage = computed(() => {
+    const segment = this.firstPathSegment(this.currentRoute() || this.router.url);
+    return !segment || ['homepage', 'integrated-program', 'landing-page'].includes(segment);
+  });
+  publicLayout = computed(() => ['careers-page', 'programs', 'program', 'program-faqs', 'terms', 'payment-policies'].includes(this.firstPathSegment(this.currentRoute() || this.router.url)));
+  navMenuItems = computed(() => this.withSeriesMenus(this.authService.menuItems(), this.authService.currentUser()));
   isMobile = signal(false);
   sidenavOpen = signal(true);
   showProfileDropdown = signal(false);
@@ -128,6 +134,11 @@ export class AppComponent implements OnInit, OnDestroy {
       });
   }
 
+  ngAfterViewChecked() {
+    const video = this.shellPreview?.nativeElement;
+    if (this.proctoring.active() && video) this.proctoring.bindPreview(video);
+  }
+
   toggleNotifications() { this.showNotifications.update(value => !value); }
 
   openNotification(item: StudentNotification) {
@@ -153,6 +164,11 @@ export class AppComponent implements OnInit, OnDestroy {
         this.profileContainer && 
         !this.profileContainer.nativeElement.contains(event.target)) {
       this.closeProfileDropdown();
+    }
+    if (this.showNotifications() &&
+        this.notificationContainer &&
+        !this.notificationContainer.nativeElement.contains(event.target)) {
+      this.showNotifications.set(false);
     }
   }
 
@@ -292,6 +308,28 @@ export class AppComponent implements OnInit, OnDestroy {
   showFullscreenHeader(): boolean {
     const route = this.currentRoute();
     return route.includes('/take-test');
+  }
+
+  private firstPathSegment(url: string): string {
+    return (url || '').split(/[?#]/)[0].split('/').filter(Boolean)[0] || '';
+  }
+
+  private withSeriesMenus(items: MenuItem[], user: { role?: string; type?: string } | null): MenuItem[] {
+    if (user?.role !== 'student') return items;
+    const hasTop = (path: string) => items.some(item => item.path === path);
+    const extras: MenuItem[] = [];
+    if ((user.type === 'pre' || user.type === 'combo') && !hasTop('/prelims-test-series')) {
+      extras.push({ name: 'Prelims Test Series', path: '/prelims-test-series', icon: 'event_note' });
+    }
+    if ((user.type === 'mains' || user.type === 'combo') && !hasTop('/mains-test-series')) {
+      extras.push({ name: 'Mains Test Series', path: '/mains-test-series', icon: 'event_note' });
+    }
+    const withoutNested = items.map(item => !item.children?.length ? item : {
+      ...item,
+      children: item.children.filter(child => child.path !== '/prelims-test-series' && child.path !== '/mains-test-series')
+    });
+    const insertAt = Math.min(1, withoutNested.length);
+    return [...withoutNested.slice(0, insertAt), ...extras, ...withoutNested.slice(insertAt)];
   }
 
   logout() {

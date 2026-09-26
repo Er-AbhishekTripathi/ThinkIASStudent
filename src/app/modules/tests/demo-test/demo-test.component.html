@@ -1,6 +1,7 @@
 <div class="student-demo-tests-container">
-  <div class="header">
+  <div class="page-header">
     <div class="header-content">
+      <span class="eyebrow">PRACTICE ZONE</span>
       <h1>Practice Demo Tests</h1>
       <p class="subtitle">Test your knowledge with unlimited practice attempts</p>
     </div>
@@ -108,11 +109,11 @@
         <!-- Test Details -->
         <div class="test-details">
           <div class="detail-item">
-            <span class="detail-label">Total Marks:</span>
+            <span class="detail-label"><mat-icon>calculate</mat-icon>Total Marks:</span>
             <span class="detail-value">{{ (test.marksPerQuestion * test.questionUids?.length) || 0 }}</span>
           </div>
           <div class="detail-item">
-            <span class="detail-label">Negative Marks:</span>
+            <span class="detail-label"><mat-icon>remove</mat-icon>Negative Marks:</span>
             <span class="detail-value">{{ test.negativeMarks || 0 }}</span>
           </div>
         </div>

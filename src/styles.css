@@ -300,6 +300,12 @@ img {
     font-size: 14px;
     font-family: 'Outfit', sans-serif;
 }
+.header .top_left_header .date p > span:not(:first-child) {
+	font-size: 13px;
+}
+.header .top_left_header .date p > span:not(:first-child) i {
+	font-size: 13px;
+}
 .header .top_left_header span:first-child{
   padding-right: 8px;
   border-right: 1px solid var(--light-green-color);
@@ -325,7 +331,7 @@ img {
 
 .logo_main {
 	width: 100%;
-	max-width: 160px;
+	max-width: 190px;
 	display: inline-block;
 }
 
@@ -384,7 +390,7 @@ width: 100%;
 
 @media (min-width: 992px) and (max-width: 1199px) {
 	.logo_main {
-		max-width: 130px;
+		max-width: 155px;
 	}
 
 	.header ul li a {
@@ -395,7 +401,7 @@ width: 100%;
 
 @media (min-width: 1200px) and (max-width: 1439px) {
 	.logo_main {
-		max-width: 140px;
+		max-width: 165px;
 	}
 
 	.header ul li a {
@@ -802,6 +808,54 @@ app-slider{
 	padding-bottom: 60px;
 }
 
+.about .image_section > .div {
+	position: relative;
+	width: 100%;
+	min-height: 390px;
+}
+
+.about .image_section {
+	align-self: flex-start;
+}
+
+.about .top_image {
+	width: 70%;
+	height: 330px;
+}
+
+.about .top_image img {
+	display: block;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+
+.about .bottom_image {
+	width: min(280px, 55%);
+	height: 180px;
+	right: 0;
+	bottom: 0;
+	margin: 0;
+	float: none;
+}
+
+.about .bottom_image img {
+	display: block;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+
+.about .image_section > .div > .animation_design:not(.icon_1) {
+	position: absolute;
+	left: 3%;
+	bottom: 0;
+	top: auto;
+	z-index: 2;
+	margin: 0;
+	animation: none;
+}
+
 .about .main_heading {
 	padding-top: 8px;
 }
@@ -852,6 +906,49 @@ app-slider{
 @media screen and (max-width: 767px) {
 	.about .main_heading.ps-5 { padding-left: 0 !important; }
 	.about .sub_heading { font-size: 30px; }
+}
+
+@media screen and (max-width: 991px) {
+	.about .image_section {
+		margin-bottom: 0;
+	}
+
+	.about .image_section > .div {
+		min-height: clamp(260px, 48vw, 390px);
+	}
+
+	.about .top_image {
+		height: clamp(240px, 42vw, 330px);
+	}
+
+	.about .bottom_image {
+		height: clamp(140px, 24vw, 180px);
+	}
+}
+
+@media screen and (max-width: 576px) {
+	.about .image_section {
+		display: block;
+	}
+
+	.about .image_section > .div {
+		min-height: 270px;
+	}
+
+	.about .top_image {
+		width: 78%;
+		height: 240px;
+	}
+
+	.about .bottom_image {
+		width: 58%;
+		height: 140px;
+	}
+
+	.about .image_section > .div > .animation_design:not(.icon_1) {
+		left: 0;
+		padding: 8px 12px 8px 8px;
+	}
 }
 .support.support_call .icon {
 	background: #d7ffda;

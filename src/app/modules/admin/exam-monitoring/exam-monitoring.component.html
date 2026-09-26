@@ -10,12 +10,13 @@
 
   <section class="layout" *ngIf="sessions.length">
     <div class="session-list">
-      <button class="session" *ngFor="let session of sessions; trackBy: trackById" (click)="select(session)" [class.selected]="selected?._id === session._id">
+      <div class="session" *ngFor="let session of sessions; trackBy: trackById" (click)="select(session)" [class.selected]="selected?._id === session._id">
         <img *ngIf="session.latestSnapshotUrl" [src]="session.latestSnapshotUrl" alt="Latest student snapshot">
         <div class="placeholder" *ngIf="!session.latestSnapshotUrl"><mat-icon>desktop_windows</mat-icon></div>
         <span class="details"><strong>{{ studentName(session) }}</strong><small>{{ testName(session) }} · {{ session.testModel }}</small><small>{{ session.lastHeartbeatAt | date:'medium' }}</small></span>
         <span class="status" [class.online]="session.online">{{ (session.online ? 'LIVE' : session.status) | t }}</span>
-      </button>
+        <button class="list-delete" type="button" (click)="deleteSession(session, $event)">Delete</button>
+      </div>
     </div>
 
     <article class="viewer" *ngIf="selected; else chooseSession">
@@ -25,6 +26,7 @@
       <div class="actions">
         <button mat-raised-button color="primary" (click)="watchLive(selected)" [disabled]="!selected.online"><mat-icon>visibility</mat-icon>{{ 'Watch live' | t }}</button>
         <button mat-stroked-button (click)="stopLive()" *ngIf="liveState"><mat-icon>stop</mat-icon>{{ 'Stop live' | t }}</button>
+        <button mat-raised-button color="warn" type="button" (click)="deleteSession(selected)"><mat-icon>delete</mat-icon>Delete</button>
       </div>
 
       <section class="recording" *ngIf="selected.recordingUrl">

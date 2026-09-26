@@ -9,6 +9,8 @@ import { ProgramBatchesComponent } from './modules/homepage/program/program-batc
 
 export const routes: Routes = [
   {path:'program-faqs',loadComponent:()=>import('./modules/homepage/program-faqs/program-faqs.component').then(m=>m.ProgramFaqsComponent)},
+  {path:'terms',loadComponent:()=>import('./shared/components/legal-policy/legal-policy.component').then(m=>m.LegalPolicyComponent),data:{policy:'terms'}},
+  {path:'payment-policies',loadComponent:()=>import('./shared/components/legal-policy/legal-policy.component').then(m=>m.LegalPolicyComponent),data:{policy:'payments'}},
   {path:'programs',loadComponent:()=>import('./modules/homepage/program-catalog/program-catalog.component').then(m=>m.ProgramCatalogComponent)},
   {path: 'prelims-test-series', loadComponent: () => import('./shared/components/test-series-schedule/test-series-schedule.component').then(m => m.TestSeriesScheduleComponent), canActivate: [authGuard, roleGuard], data: {role: 'student', kind: 'pre'}},
   {path: 'mains-test-series', loadComponent: () => import('./shared/components/test-series-schedule/test-series-schedule.component').then(m => m.TestSeriesScheduleComponent), canActivate: [authGuard, roleGuard], data: {role: 'student', kind: 'mains'}},
@@ -87,12 +89,12 @@ export const routes: Routes = [
     canActivate: [authGuard, roleGuard],
     data: { role: 'admin' }
   },
-  {
-    path: 'exam-monitoring',
-    loadComponent: () => import('./modules/admin/exam-monitoring/exam-monitoring.component').then(m => m.ExamMonitoringComponent),
-    canActivate: [authGuard, roleGuard],
-    data: { role: 'admin' }
-  },
+  // {
+  //   path: 'exam-monitoring',
+  //   loadComponent: () => import('./modules/admin/exam-monitoring/exam-monitoring.component').then(m => m.ExamMonitoringComponent),
+  //   canActivate: [authGuard, roleGuard],
+  //   data: { role: 'admin' }
+  // },
     { path: 'view/:type', component: ResourcesViewComponent }, 
     { 
     path: 'syllabus-master', 
@@ -118,12 +120,9 @@ export const routes: Routes = [
   canActivate: [authGuard, roleGuard],
   data: { role: 'student' }
   },
-  {
-  path: 'pre-session', 
-  loadComponent: () => import('./modules/meeting/meeting.component').then(m => m.MeetingComponent),
-  canActivate: [authGuard, roleGuard],
-  data: { role: 'student' }
-  },
+  {path: 'pre-session', loadComponent: () => import('./modules/meeting/meeting.component').then(m => m.MeetingComponent), canActivate: [authGuard, roleGuard], data: { role: 'student', audience: 'pre' }},
+  {path: 'mains-session', loadComponent: () => import('./modules/meeting/meeting.component').then(m => m.MeetingComponent), canActivate: [authGuard, roleGuard], data: { role: 'student', audience: 'mains' }},
+  {path: 'support-tickets', loadComponent: () => import('./modules/support/support-tickets.component').then(m => m.SupportTicketsComponent), canActivate: [authGuard]},
   {
   path: 'my-profile', 
   loadComponent: () => import('./modules/dashboard/my-profile/my-profile.component').then(m => m.MyProfileComponent),

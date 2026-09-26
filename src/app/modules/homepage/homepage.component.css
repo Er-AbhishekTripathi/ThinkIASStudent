@@ -125,7 +125,7 @@
 /* About Section Mobile */
 @media (max-width: 991px) {
   .about .image_section {
-    margin-bottom: 40px;
+    margin-bottom: 0;
   }
   
   .about .animation_design.icon_1,
@@ -135,16 +135,13 @@
   
   .top_image,
   .bottom_image {
-    width: 100%;
     position: relative;
     right: 0;
-    margin-top: 20px;
+    margin-top: 0;
   }
   
   .bottom_image {
-    margin-top: 20px;
-    position: relative;
-    height: 200px;
+    position: absolute;
   }
 }
 
