@@ -5,35 +5,36 @@ import { HttpClient } from '@angular/common/http';
 import { ActivatedRoute } from '@angular/router';
 import { environment } from '../../../environment/environment';
 import { AuthService } from '../../shared/services/auth.service';
+import { TranslatePipe } from '../../shared/i18n/translate.pipe';
 
 @Component({
   selector: 'app-support-tickets',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, TranslatePipe],
   template: `<section class="wrap">
   <header class="page-header">
     <div class="header-left">
-      <span class="eyebrow">HELP DESK</span>
-      <h1>Support Tickets</h1>
-      <p class="subtitle">Raise a complaint, attach files and track admin replies.</p>
+      <span class="eyebrow">{{ 'HELP DESK' | t }}</span>
+      <h1>{{ 'Support Tickets' | t }}</h1>
+      <p class="subtitle">{{ 'Raise a complaint, attach files and track admin replies.' | t }}</p>
     </div>
-    <button *ngIf="!isAdmin" type="button" class="new-ticket-btn" (click)="showCreate=true">+ New ticket</button>
+    <button *ngIf="!isAdmin" type="button" class="new-ticket-btn" (click)="showCreate=true">+ {{ 'New ticket' | t }}</button>
   </header>
 
   <div class="toolbar">
     <div class="filter-chips">
       <button type="button" class="chip" [class.active]="status===''" (click)="setStatusFilter('')">All</button>
-      <button type="button" class="chip" [class.active]="status==='open'" (click)="setStatusFilter('open')">Open</button>
-      <button type="button" class="chip" [class.active]="status==='in_progress'" (click)="setStatusFilter('in_progress')">In progress</button>
-      <button type="button" class="chip" [class.active]="status==='closed'" (click)="setStatusFilter('closed')">Closed</button>
+      <button type="button" class="chip" [class.active]="status==='open'" (click)="setStatusFilter('open')">{{ 'Open' | t }}</button>
+      <button type="button" class="chip" [class.active]="status==='in_progress'" (click)="setStatusFilter('in_progress')">{{ 'In progress' | t }}</button>
+      <button type="button" class="chip" [class.active]="status==='closed'" (click)="setStatusFilter('closed')">{{ 'Closed' | t }}</button>
     </div>
   </div>
 
-  <p *ngIf="error" class="error-banner">{{error}}</p>
+  <p *ngIf="error" class="error-banner">{{error | t}}</p>
 
   <div class="layout">
     <div class="list-panel">
-      <div class="panel-heading">Tickets <span class="count-badge">{{tickets.length}}</span></div>
+      <div class="panel-heading">{{ 'Tickets' | t }} <span class="count-badge">{{tickets.length}}</span></div>
       <ul class="ticket-list" *ngIf="tickets.length; else emptyList">
         <li *ngFor="let ticket of tickets" (click)="open(ticket._id)" [class.active]="selected?._id===ticket._id">
           <div class="avatar">{{initials(ticket.createdBy?.fullName || ticket.createdBy?.email)}}</div>
@@ -41,14 +42,14 @@ import { AuthService } from '../../shared/services/auth.service';
             <strong>{{ticket.subject}}</strong>
             <small>{{ticket.createdBy?.fullName || ticket.createdBy?.email}}</small>
           </div>
-          <span class="status-badge" [ngClass]="statusClass(ticket.status)">{{statusLabel(ticket.status)}}</span>
+          <span class="status-badge" [ngClass]="statusClass(ticket.status)">{{statusLabel(ticket.status) | t}}</span>
         </li>
       </ul>
       <ng-template #emptyList>
         <div class="empty-state small">
           <span class="empty-icon">🗂️</span>
-          <p>No tickets yet.</p>
-          <button *ngIf="!isAdmin" type="button" class="link-btn" (click)="showCreate=true">Create your first ticket</button>
+          <p>{{ 'No tickets yet.' | t }}</p>
+          <button *ngIf="!isAdmin" type="button" class="link-btn" (click)="showCreate=true">{{ 'Create your first ticket' | t }}</button>
         </div>
       </ng-template>
     </div>
@@ -57,12 +58,12 @@ import { AuthService } from '../../shared/services/auth.service';
       <div class="detail-header">
         <div class="detail-title">
           <h2>{{selected.subject}}</h2>
-          <span class="status-badge" [ngClass]="statusClass(selected.status)">{{statusLabel(selected.status)}}</span>
+          <span class="status-badge" [ngClass]="statusClass(selected.status)">{{statusLabel(selected.status) | t}}</span>
         </div>
         <div *ngIf="isAdmin" class="status-row">
-          <button type="button" [class.active]="selected.status==='open'" (click)="setStatus('open')">Open</button>
-          <button type="button" [class.active]="selected.status==='in_progress'" (click)="setStatus('in_progress')">In progress</button>
-          <button type="button" class="close-btn" [class.active]="selected.status==='closed'" (click)="setStatus('closed')">Close</button>
+          <button type="button" [class.active]="selected.status==='open'" (click)="setStatus('open')">{{ 'Open' | t }}</button>
+          <button type="button" [class.active]="selected.status==='in_progress'" (click)="setStatus('in_progress')">{{ 'In progress' | t }}</button>
+          <button type="button" class="close-btn" [class.active]="selected.status==='closed'" (click)="setStatus('closed')">{{ 'Close' | t }}</button>
         </div>
       </div>
 
@@ -70,7 +71,7 @@ import { AuthService } from '../../shared/services/auth.service';
         <div class="message" *ngFor="let message of selected.messages" [class.admin]="message.role==='admin'">
           <div class="message-avatar">{{initials(message.role)}}</div>
           <div class="message-bubble">
-            <b>{{message.role === 'admin' ? 'Support Team' : 'You'}}</b>
+            <b>{{ (message.role === 'admin' ? 'Support Team' : 'You') | t }}</b>
             <p>{{message.body}}</p>
             <div class="attachments" *ngIf="message.attachments?.length">
               <a *ngFor="let file of message.attachments" [href]="file.url" target="_blank" rel="noopener">📎 {{file.name}}</a>
@@ -80,40 +81,40 @@ import { AuthService } from '../../shared/services/auth.service';
       </div>
 
       <form class="reply-form" *ngIf="selected.status!=='closed' || isAdmin" (submit)="reply($event)">
-        <textarea [(ngModel)]="replyBody" name="reply" placeholder="Write a reply..." rows="3"></textarea>
+        <textarea [(ngModel)]="replyBody" name="reply" [placeholder]="'Write a reply...' | t" rows="3"></textarea>
         <div class="form-footer">
-          <label class="file-btn">📎 Attach files<input type="file" multiple (change)="onFiles($event)" accept="image/*,.pdf" hidden></label>
-          <span class="file-count" *ngIf="files.length">{{files.length}} file(s) selected</span>
-          <button type="submit" class="send-btn">Send reply</button>
+          <label class="file-btn">📎 {{ 'Attach files' | t }}<input type="file" multiple (change)="onFiles($event)" accept="image/*,.pdf" hidden></label>
+          <span class="file-count" *ngIf="files.length">{{files.length}} {{ 'file(s) selected' | t }}</span>
+          <button type="submit" class="send-btn">{{ 'Send reply' | t }}</button>
         </div>
       </form>
-      <p *ngIf="selected.status==='closed' && !isAdmin" class="closed-note">This ticket is closed. Create a new ticket if you need further help.</p>
+      <p *ngIf="selected.status==='closed' && !isAdmin" class="closed-note">{{ 'This ticket is closed. Create a new ticket if you need further help.' | t }}</p>
     </article>
     <ng-template #noSelection>
       <div class="empty-state large">
         <span class="empty-icon">💬</span>
-        <h3>Select a ticket</h3>
-        <p>Choose a ticket from the list to view details and replies.</p>
+        <h3>{{ 'Select a ticket' | t }}</h3>
+        <p>{{ 'Choose a ticket from the list to view details and replies.' | t }}</p>
       </div>
     </ng-template>
   </div>
 
   <div class="modal" *ngIf="showCreate" (click)="showCreate=false">
     <form class="modal-card" (submit)="create($event)" (click)="$event.stopPropagation()">
-      <h3>Create ticket</h3>
-      <label class="field-label">Subject category</label>
+      <h3>{{ 'Create ticket' | t }}</h3>
+      <label class="field-label">{{ 'Subject category' | t }}</label>
       <select [(ngModel)]="subject" name="subject" required>
-        <option value="" disabled selected>Select a category</option>
-        <option value="Exam Related">Exam Related</option>
-        <option value="Account Related">Account Related</option>
+        <option value="" disabled selected>{{ 'Select a category' | t }}</option>
+        <option value="Exam Related">{{ 'Exam Related' | t }}</option>
+        <option value="Account Related">{{ 'Account Related' | t }}</option>
       </select>
-      <label class="field-label">Details</label>
-      <textarea [(ngModel)]="body" name="body" placeholder="Describe your issue" rows="4" required></textarea>
-      <label class="file-btn">📎 Attach files<input type="file" multiple (change)="onFiles($event)" accept="image/*,.pdf" hidden></label>
-      <span class="file-count" *ngIf="files.length">{{files.length}} file(s) selected</span>
+      <label class="field-label">{{ 'Details' | t }}</label>
+      <textarea [(ngModel)]="body" name="body" [placeholder]="'Describe your issue' | t" rows="4" required></textarea>
+      <label class="file-btn">📎 {{ 'Attach files' | t }}<input type="file" multiple (change)="onFiles($event)" accept="image/*,.pdf" hidden></label>
+      <span class="file-count" *ngIf="files.length">{{files.length}} {{ 'file(s) selected' | t }}</span>
       <div class="modal-actions">
-        <button type="button" class="cancel-btn" (click)="showCreate=false">Cancel</button>
-        <button type="submit" class="send-btn">Submit ticket</button>
+        <button type="button" class="cancel-btn" (click)="showCreate=false">{{ 'Cancel' | t }}</button>
+        <button type="submit" class="send-btn">{{ 'Submit ticket' | t }}</button>
       </div>
     </form>
   </div>

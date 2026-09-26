@@ -78,7 +78,7 @@
                             class="en">Syllabus</a><a href="javascript:void(0)" class="hi">पाठ्यक्रम</a></li>
 
                         <!-- Mentorship Program Dropdown -->
-                        <li class="dropdown position-relative" *ngFor="let group of programGroups"><a class="dropdown-toggle" href="#" (click)="$event.preventDefault()" data-bs-toggle="dropdown">{{currentLanguage==='hi'?group.hi:group.label}}</a><div class="dropdown-menu"><a class="dropdown-item" routerLink="/programs" [queryParams]="{category:group.categories[0]}">View all</a><a class="dropdown-item" *ngFor="let program of groupPrograms(group)" [routerLink]="['/program',program._id]">{{currentLanguage==='hi'?(program.programNameHindi||program.programName):program.programName}}</a></div></li>
+                        <li class="dropdown position-relative" *ngFor="let group of programGroups"><a class="dropdown-toggle" href="#" (click)="$event.preventDefault()" data-bs-toggle="dropdown">{{currentLanguage==='hi'?group.hi:group.label}}</a><div class="dropdown-menu"><a class="dropdown-item" routerLink="/programs" [queryParams]="{category:group.categories[0]}">{{currentLanguage==='hi'?'सभी देखें':'View all'}}</a><a class="dropdown-item" *ngFor="let program of groupPrograms(group)" [routerLink]="['/program',program._id]">{{programDisplayName(program)}}</a></div></li>
 
                         <li class="dropdown position-relative">
                             <a href="javascript:void(0)" class="en dropdown-toggle" data-bs-toggle="dropdown">
@@ -156,7 +156,7 @@
         </li>
 
         <!-- Mentorship Program Mobile -->
-        <li *ngFor="let group of programGroups"><details><summary>{{currentLanguage==='hi'?group.hi:group.label}}</summary><a class="d-block py-2" routerLink="/programs" [queryParams]="{category:group.categories[0]}" (click)="closeMobileMenu()">View all</a><a class="d-block py-2" *ngFor="let program of groupPrograms(group)" [routerLink]="['/program',program._id]" (click)="closeMobileMenu()">{{currentLanguage==='hi'?(program.programNameHindi||program.programName):program.programName}}</a></details></li>
+        <li *ngFor="let group of programGroups"><details><summary>{{currentLanguage==='hi'?group.hi:group.label}}</summary><a class="d-block py-2" routerLink="/programs" [queryParams]="{category:group.categories[0]}" (click)="closeMobileMenu()">{{currentLanguage==='hi'?'सभी देखें':'View all'}}</a><a class="d-block py-2" *ngFor="let program of groupPrograms(group)" [routerLink]="['/program',program._id]" (click)="closeMobileMenu()">{{programDisplayName(program)}}</a></details></li>
 
         <li (click)="scrollToSection('materials'); closeMobileMenu()">
             <a class="d-block py-2 en" [class.hide]="currentLanguage !== 'en'">Syllabus</a>

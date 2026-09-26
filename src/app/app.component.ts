@@ -77,7 +77,7 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewChecked {
     const segment = this.firstPathSegment(this.currentRoute() || this.router.url);
     return !segment || ['homepage', 'integrated-program', 'landing-page'].includes(segment);
   });
-  publicLayout = computed(() => ['careers-page', 'programs', 'program', 'program-faqs'].includes(this.firstPathSegment(this.currentRoute() || this.router.url)));
+  publicLayout = computed(() => ['careers-page', 'programs', 'program', 'program-faqs', 'terms', 'payment-policies'].includes(this.firstPathSegment(this.currentRoute() || this.router.url)));
   navMenuItems = computed(() => this.withSeriesMenus(this.authService.menuItems(), this.authService.currentUser()));
   isMobile = signal(false);
   sidenavOpen = signal(true);
