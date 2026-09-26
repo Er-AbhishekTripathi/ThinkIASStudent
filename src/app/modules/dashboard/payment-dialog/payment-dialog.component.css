@@ -628,10 +628,19 @@
 }
 
 .button-icon {
-  margin-right: 8px;
+  margin: 0;
   font-size: 20px;
   width: 20px;
   height: 20px;
+}
+
+.pay-button-content {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  white-space: nowrap;
+  line-height: 1;
 }
 
 /* Snackbar Styles */
