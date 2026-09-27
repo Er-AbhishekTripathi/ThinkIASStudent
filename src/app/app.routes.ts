@@ -52,7 +52,8 @@ export const routes: Routes = [
   { 
     path: 'prelims-tests', 
     loadComponent: () => import('./modules/tests/live-tests/live-tests.component').then(m => m.LiveTestsComponent),
-    canActivate: [authGuard]
+    canActivate: [authGuard, roleGuard],
+    data: { role: 'student', plan: 'pre' }
   },
   { 
     path: 'manage-tests', 
@@ -63,14 +64,14 @@ export const routes: Routes = [
   { 
     path: 'take-test/:id', 
     loadComponent: () => import('./modules/tests/take-test/take-test.component').then(m => m.TakeTestComponent),
-    canActivate: [authGuard, roleGuard, TestGuard], // Add test-specific guards
-    data: { role: 'student', requiresFullscreen: true }
+    canActivate: [authGuard, roleGuard, TestGuard],
+    data: { role: 'student', requiresFullscreen: true, plan: 'pre' }
   },
   { 
     path: 'prelims-results', 
     loadComponent: () => import('./modules/results/results/results.component').then(m => m.ResultsComponent),
     canActivate: [authGuard, roleGuard],
-    data: { role: 'student' }
+    data: { role: 'student', plan: 'pre' }
   },
   { 
     path: 'admin-results', 
@@ -168,10 +169,9 @@ export const routes: Routes = [
   path: 'student-answer-writing', 
   loadComponent: () => import('./modules/mains/student-answer-writing/student-answer-writing.component').then(m => m.StudentAnswerWritingComponent),
   canActivate: [authGuard, roleGuard],
-  data: { role: 'student' }
+    data: { role: 'student', plan: 'mains' }
   },
 
-  // app.routes.ts
 {
   path: 'module-test/:id/:name',
   loadComponent: () => import('./modules/homepage/studymaterial-slider/module-test/module-test.component').then(m => m.ModuleTestComponent),
@@ -179,17 +179,17 @@ export const routes: Routes = [
 },
 
 {
-  path: 'live-test', 
+  path: 'live-test',
   loadComponent: () => import('./modules/mains/live-test/live-test.component').then(m => m.LiveTestComponent),
   canActivate: [authGuard, roleGuard],
-  data: { role: 'student' }
+  data: { role: 'student', plan: 'mains' }
   },
 
   {
   path: 'mains-results', 
   loadComponent: () => import('./modules/mains/daw-evaluation/daw-evaluation.component').then(m => m.DawEvaluationComponent),
   canActivate: [authGuard, roleGuard],
-  data: { role: 'student' }
+  data: { role: 'student', plan: 'mains' }
   },
 
   { path: '**', component: PageNotFoundComponent }

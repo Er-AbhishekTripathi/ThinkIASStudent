@@ -144,7 +144,9 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewChecked {
   openNotification(item: StudentNotification) {
     this.notificationService.markRead(item);
     this.showNotifications.set(false);
-    if (item.link) this.router.navigateByUrl(item.link);
+    if (item.link) {
+      this.router.navigateByUrl(item.link).catch(() => this.router.navigate(['/dashboard']));
+    }
   }
 
   enablePush() {
