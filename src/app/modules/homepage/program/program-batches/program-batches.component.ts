@@ -12,7 +12,7 @@ import { environment } from '../../../../../environment/environment';
 export interface Program {
   _id?: string;
   programName: string;
-  programNameHindi?: string; descriptionHindi?: string; durationHindi?: string; featuresHindi?: string[];
+  programNameHindi?: string; descriptionHindi?: string; durationHindi?: string; featuresHindi?: string[]; displayImageHindi?: string;
   programCategory: string;
   year: string;
   price: number;
@@ -50,7 +50,7 @@ export interface Batch {
         <div class="container">
           <div class="program-info" *ngIf="program">
             <div class="program-image">
-              <img [src]="program.displayImage" [alt]="program.programName" (error)="handleImageError($event)">
+              <img [src]="programImage(program)" [alt]="program.programName" (error)="handleImageError($event)">
             </div>
             <div class="program-details">
               <div class="program-category-badge">
@@ -159,12 +159,12 @@ export interface Batch {
                   <span>Program Brochures</span>
                 </div>
                 <div class="brochure-links">
-                  <a *ngIf="batch.brochureHindi" [href]="batch.brochureHindi" target="_blank" class="brochure-link hindi">
+                  <a *ngIf="brochureLink(batch, 'hi')" [href]="brochureLink(batch, 'hi')" target="_blank" class="brochure-link hindi hi">
                     <i class="fas fa-language"></i>
                     हिंदी ब्रोशर
                   </a>
-                  <a *ngIf="batch.brochureEnglish" [href]="batch.brochureEnglish" target="_blank" class="brochure-link english">
-                    <i class="fas fa-file-alt"></i>{{ 'English Brochure' | t }}</a>
+                  <a *ngIf="brochureLink(batch, 'en')" [href]="brochureLink(batch, 'en')" target="_blank" class="brochure-link english en">
+                    <i class="fas fa-file-alt"></i>English Brochure</a>
                 </div>
               </div>
               
@@ -252,5 +252,20 @@ export class ProgramBatchesComponent implements OnInit {
 
   handleImageError(event: any): void {
     event.target.src = 'assets/images/logo.png';
+  }
+
+  programImage(program: Program): string {
+    if (document.body.classList.contains('hindi') && program.displayImageHindi) {
+      return program.displayImageHindi;
+    }
+    return program.displayImage;
+  }
+
+  brochureLink(batch: Batch, lang: 'en' | 'hi'): string {
+    const hindiSite = document.body.classList.contains('hindi');
+    if (hindiSite) {
+      return lang === 'hi' ? (batch.brochureHindi || batch.brochureEnglish || '') : '';
+    }
+    return lang === 'en' ? (batch.brochureEnglish || batch.brochureHindi || '') : '';
   }
 }

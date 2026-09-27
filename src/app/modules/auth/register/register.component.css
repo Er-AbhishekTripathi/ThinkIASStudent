@@ -5,7 +5,7 @@
   align-items: center;
   min-height: 100vh;
   padding: 20px;
-  background: linear-gradient(135deg, #e0f7fa, #e3f2fd, #e8eaf6);
+  background: linear-gradient(135deg, #e8f5e9, #e3f2fd, #fff8e1);
   font-family: 'Poppins', sans-serif;
 }
 
@@ -25,6 +25,18 @@
   }
 }
 
+.register-container .hi { display: none; }
+.register-container .en { display: inline; }
+body.hindi .register-container .hi { display: inline; }
+body.hindi .register-container .en { display: none; }
+
+.register-logo {
+  width: 180px;
+  max-width: 70%;
+  height: auto;
+  margin-bottom: 0.75rem;
+}
+
 /* Card Header Styling */
 mat-card-header {
   display: flex;
@@ -35,9 +47,10 @@ mat-card-header {
 }
 
 mat-card-title {
+  font-family: 'Playfair Display', Georgia, serif;
   font-size: 1.8rem;
-  font-weight: 600;
-  color: #1565c0;
+  font-weight: 700;
+  color: #17683f;
   margin-bottom: 0.5rem;
 }
 

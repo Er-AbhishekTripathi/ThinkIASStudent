@@ -482,7 +482,10 @@ switchLanguage(lang: string) {
   }
 
   openFreeQuiz() {
-  // navigate or open quiz page
   this.router.navigate(['/free-quiz']);
 }
+
+  openDemoTests() {
+    this.router.navigate(['/demo-tests']);
+  }
 }

@@ -139,9 +139,7 @@ export const routes: Routes = [
       { path: 'free-quiz', component: FreeQuizComponent }, 
           { 
     path: 'demo-tests', 
-    loadComponent: () => import('./modules/tests/demo-test/demo-test.component').then(m => m.DemoTestComponent),
-    canActivate: [authGuard, roleGuard],
-    data: { role: 'student' }
+    loadComponent: () => import('./modules/tests/demo-test/demo-test.component').then(m => m.DemoTestComponent)
   },
   { 
     path: 'take-demo-test/:id', 

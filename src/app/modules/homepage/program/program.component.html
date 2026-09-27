@@ -117,7 +117,7 @@
           <!-- Card Image -->
           <div class="card-image">
             <img 
-              [src]="program.displayImage" 
+              [src]="programImage(program)" 
               [alt]="program.programName"
               (error)="handleImageError($event)">
             <div class="card-overlay">
