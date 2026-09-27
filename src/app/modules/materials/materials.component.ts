@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DirectoryService } from '../../shared/services/directory.service';
 import { DirectoryItem } from '../../core/models/directory.model';
+import { ActivatedRoute } from '@angular/router';
 
 interface BreadcrumbItem {
   name: string;
@@ -32,12 +33,18 @@ export class MaterialsComponent implements OnInit {
   // Messages
   infoMessage = '';
   errorMessage = '';
+  section: 'pre' | 'mains' = 'pre';
   
-  constructor(private directoryService: DirectoryService) {}
+  constructor(private directoryService: DirectoryService, private route: ActivatedRoute) {}
   
   ngOnInit() {
-    this.loadDirectoryTree();
-    this.updateBreadcrumbs();
+    this.route.data.subscribe((data) => {
+      this.section = data['section'] === 'mains' ? 'mains' : 'pre';
+      this.currentItem = null;
+      this.navigationHistory = [];
+      this.loadDirectoryTree();
+      this.updateBreadcrumbs();
+    });
   }
   
   // Load directory tree
@@ -45,7 +52,7 @@ export class MaterialsComponent implements OnInit {
     this.loading = true;
     const apiParentId = parentId || undefined;
     
-    this.directoryService.getDirectoryTree(apiParentId).subscribe({
+    this.directoryService.getDirectoryTree(apiParentId, this.section).subscribe({
       next: (response) => {
         this.items = response.items || [];
         this.loading = false;

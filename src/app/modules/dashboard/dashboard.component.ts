@@ -8,6 +8,7 @@ import { Router, RouterLink } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
 import { AuthService } from '../../shared/services/auth.service';
 import { TestService } from '../../shared/services/test.service';
+import { LiveTest, LiveTestService } from '../../shared/services/live-test.service';
 import { PaymentDialogComponent } from './payment-dialog/payment-dialog.component';
 import { UserService } from '../../shared/services/user.service';
 
@@ -35,6 +36,7 @@ Chart.register(...registerables);
 export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
   private authService = inject(AuthService);
   private testService = inject(TestService);
+  private liveTestService = inject(LiveTestService);
   private userService = inject(UserService);
   private planService = inject(PublicPlanService);
 
@@ -43,6 +45,8 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
 
   currentUser = this.authService.currentUser;
   upcomingTests = signal<any[]>([]);
+  liveTests = signal<LiveTest[]>([]);
+  liveClock = signal(0);
   recentResults = signal<any[]>([]);
   activePlanIds = signal<string[]>([]);
   completedTestsCount = signal<number>(0);
@@ -54,6 +58,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
   plans = signal<Plan[]>([]);
   @ViewChild('performanceChart') performanceChart?: ElementRef<HTMLCanvasElement>;
   private performanceChartInstance: Chart | null = null;
+  private liveTimer: ReturnType<typeof setInterval> | null = null;
 
   ngOnInit() {
     this.planService.getPlans().subscribe({ next: plans => this.plans.set(plans), error: error => console.error('Error loading plans:', error) });
@@ -66,10 +71,16 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
     if (user?.role === 'student') {
       if (user.type === 'fresh') {
         this.loadFreshStudentData();
-      } else if (user.type === 'pre' || user.type === 'combo') {
-        this.loadPreStudentData();
       } else {
-        this.loading.set(false);
+        if (user.type === 'pre' || user.type === 'combo') {
+          this.loadPreStudentData();
+        }
+        if (user.type === 'mains' || user.type === 'combo') {
+          this.loadLiveTests();
+        }
+        if (user.type === 'mains') {
+          this.loading.set(false);
+        }
       }
     } else if (user?.role === 'admin') {
       this.loadAdminData();
@@ -78,6 +89,10 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
 
   ngOnDestroy() {
     this.performanceChartInstance?.destroy();
+    if (this.liveTimer) {
+      clearInterval(this.liveTimer);
+      this.liveTimer = null;
+    }
   }
 
   ngAfterViewChecked() {
@@ -151,6 +166,39 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
         this.loading.set(false);
       }
     });
+  }
+
+  loadLiveTests() {
+    this.liveTestService.getAllStudentTests().subscribe({
+      next: (response) => {
+        const tests = (response.data || []).filter((test) => test.status !== 'expired').slice(0, 3);
+        this.liveTests.set(tests);
+        if (!this.liveTimer) {
+          this.liveTimer = setInterval(() => this.liveClock.update((value) => value + 1), 1000);
+        }
+      },
+      error: (error) => console.error('Error loading live tests:', error)
+    });
+  }
+
+  isLiveTestActive(test: LiveTest): boolean {
+    this.liveClock();
+    const now = Date.now();
+    const start = new Date(test.startDateTime).getTime();
+    const end = new Date(test.endDateTime).getTime();
+    return now >= start && now <= end && test.status !== 'submitted';
+  }
+
+  liveTestCountdown(test: LiveTest): string {
+    this.liveClock();
+    const now = Date.now();
+    const start = new Date(test.startDateTime).getTime();
+    const end = new Date(test.endDateTime).getTime();
+    const remaining = Math.max(0, (now < start ? start : end) - now) / 1000;
+    const hours = Math.floor(remaining / 3600);
+    const minutes = Math.floor((remaining % 3600) / 60);
+    const secs = Math.floor(remaining % 60);
+    return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
   }
 
   private renderPerformanceChart() {

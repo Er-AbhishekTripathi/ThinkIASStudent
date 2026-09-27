@@ -118,7 +118,13 @@ export const routes: Routes = [
   path: 'pre-materials', 
   loadComponent: () => import('./modules/materials/materials.component').then(m => m.MaterialsComponent),
   canActivate: [authGuard, roleGuard],
-  data: { role: 'student' }
+  data: { role: 'student', section: 'pre' }
+  },
+  {
+  path: 'mains-materials',
+  loadComponent: () => import('./modules/materials/materials.component').then(m => m.MaterialsComponent),
+  canActivate: [authGuard, roleGuard],
+  data: { role: 'student', section: 'mains' }
   },
   {path: 'pre-session', loadComponent: () => import('./modules/meeting/meeting.component').then(m => m.MeetingComponent), canActivate: [authGuard, roleGuard], data: { role: 'student', audience: 'pre' }},
   {path: 'mains-session', loadComponent: () => import('./modules/meeting/meeting.component').then(m => m.MeetingComponent), canActivate: [authGuard, roleGuard], data: { role: 'student', audience: 'mains' }},

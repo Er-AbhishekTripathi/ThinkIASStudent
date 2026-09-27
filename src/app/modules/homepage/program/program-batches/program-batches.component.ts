@@ -78,8 +78,8 @@ export interface Batch {
                   <i class="fas fa-tag"></i>
                   Price: 
                   <span *ngIf="program.discountedPrice">
-                    <span class="current-price">₹{{ program.price | number }}</span>
-                    <span class="original-price">₹{{ program.discountedPrice | number }}</span>
+                    <span class="current-price">₹{{ program.discountedPrice | number }}</span>
+                    <span class="original-price">₹{{ program.price | number }}</span>
                   </span>
                   <span *ngIf="!program.discountedPrice">
                     ₹{{ program.price | number }}

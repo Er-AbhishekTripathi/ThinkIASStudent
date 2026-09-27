@@ -35,9 +35,14 @@
           <span><strong>{{ 'Mains Test Series' | t }}</strong><small>{{ 'Plan your written exam practice' | t }}</small></span>
           <mat-icon class="shortcut-arrow">arrow_forward</mat-icon>
         </a>
-        <a class="shortcut-card" routerLink="/pre-materials">
+        <a class="shortcut-card" *ngIf="currentUser()?.type === 'pre' || currentUser()?.type === 'combo'" routerLink="/pre-materials">
           <span class="shortcut-icon resources-icon"><mat-icon>library_books</mat-icon></span>
-          <span><strong>{{ 'Study Resources' | t }}</strong><small>{{ 'Open notes and learning material' | t }}</small></span>
+          <span><strong>{{ 'Prelims Resources' | t }}</strong><small>{{ 'Open notes and learning material' | t }}</small></span>
+          <mat-icon class="shortcut-arrow">arrow_forward</mat-icon>
+        </a>
+        <a class="shortcut-card" *ngIf="currentUser()?.type === 'mains' || currentUser()?.type === 'combo'" routerLink="/mains-materials">
+          <span class="shortcut-icon resources-icon"><mat-icon>menu_book</mat-icon></span>
+          <span><strong>{{ 'Mains Study Materials' | t }}</strong><small>{{ 'Open mains notes and learning material' | t }}</small></span>
           <mat-icon class="shortcut-arrow">arrow_forward</mat-icon>
         </a>
         <a class="shortcut-card" [routerLink]="currentUser()?.type === 'mains' ? '/mains-session' : '/pre-session'">
@@ -45,6 +50,20 @@
           <span><strong>{{ 'Live Sessions' | t }}</strong><small>{{ 'Join classes and scheduled sessions' | t }}</small></span>
           <mat-icon class="shortcut-arrow">arrow_forward</mat-icon>
         </a>
+      </div>
+    </section>
+    <section class="upcoming-tests-panel" *ngIf="liveTests().length">
+      <div class="section-heading"><div><span class="section-kicker">{{ 'LIVE' | t }}</span><h2>{{ 'Live Tests' | t }}</h2></div><a routerLink="/live-test">{{ 'View all' | t }} <mat-icon>arrow_forward</mat-icon></a></div>
+      <div class="upcoming-test-list">
+        <article *ngFor="let test of liveTests()">
+          <div class="upcoming-icon"><mat-icon>videocam</mat-icon></div>
+          <div class="upcoming-copy">
+            <h3>{{ test.title }}</h3>
+            <p>{{ isLiveTestActive(test) ? ('Time remaining' | t) : ('Starts in' | t) }}: {{ liveTestCountdown(test) }}</p>
+          </div>
+          <a *ngIf="isLiveTestActive(test)" mat-raised-button color="primary" routerLink="/live-test">{{ 'Start' | t }}</a>
+          <span *ngIf="!isLiveTestActive(test)" class="upcoming-duration">{{ liveTestCountdown(test) }}</span>
+        </article>
       </div>
     </section>
     <section class="upcoming-tests-panel" *ngIf="upcomingTests().length">

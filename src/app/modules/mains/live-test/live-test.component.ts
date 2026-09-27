@@ -670,6 +670,7 @@ export class LiveTestComponent implements OnInit, OnDestroy {
   private liveTestFlowRef: any;
   private goToLiveTestDetailRef: any;
   private submissionDialogRef: any;
+  clock = signal(0);
 
   // ============================================
   // SUBMISSION STATE
@@ -682,6 +683,7 @@ export class LiveTestComponent implements OnInit, OnDestroy {
   // TIMER STATE
   // ============================================
   private timerInterval: any = null;
+  private clockInterval: any = null;
   private timeRemaining = 0;
   private totalDuration = 0;
 
@@ -691,6 +693,15 @@ export class LiveTestComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.loadAvailableTests();
     this.loadMyParticipations();
+    this.clockInterval = setInterval(() => {
+      this.clock.update((value) => value + 1);
+      const tests = this.availableTests();
+      const shouldRefresh = tests.some((test) => {
+        const wasUpcoming = test.status === 'upcoming';
+        return wasUpcoming && this.isTestActive(test);
+      });
+      if (shouldRefresh) this.loadAvailableTests();
+    }, 1000);
   }
 
   loadMyParticipations() {
@@ -704,6 +715,10 @@ export class LiveTestComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     this.detachLocalCamera();
     this.clearTimer();
+    if (this.clockInterval) {
+      clearInterval(this.clockInterval);
+      this.clockInterval = null;
+    }
   }
 
   // ============================================
@@ -810,11 +825,13 @@ export class LiveTestComponent implements OnInit, OnDestroy {
   }
 
   canJoin(test: LiveTest): boolean {
-    return test.status === 'available' || test.status === 'in-progress';
+    this.clock();
+    return this.isTestActive(test) && test.status !== 'submitted';
   }
 
   canSubmit(test: LiveTest): boolean {
-    return test.status === 'available' || test.status === 'in-progress';
+    this.clock();
+    return this.isTestActive(test) && test.status !== 'submitted';
   }
 
   isTestActive(test: LiveTest): boolean {
@@ -851,6 +868,7 @@ export class LiveTestComponent implements OnInit, OnDestroy {
   }
 
   getFormattedTimeRemaining(test: LiveTest): string {
+    this.clock();
     const seconds = this.getTimeRemaining(test);
     if (seconds <= 0) return '00:00:00';
     const hours = Math.floor(seconds / 3600);
