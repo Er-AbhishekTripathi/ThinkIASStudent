@@ -882,6 +882,16 @@ app-slider{
 	letter-spacing: 0;
 }
 
+.about .about-kicker {
+	margin-bottom: 6px;
+	font-family: 'Playfair Display', 'Georgia', serif;
+	font-size: clamp(22px, 2.4vw, 32px);
+	font-weight: 700;
+	letter-spacing: .04em;
+	color: #17683f;
+	line-height: 1.2;
+}
+
 .about .main_heading > p.en,
 .about .main_heading > p.hi {
 	max-width: 590px;

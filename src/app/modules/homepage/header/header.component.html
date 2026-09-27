@@ -113,10 +113,17 @@
                                         (click)="openFreeQuiz()">
                                         Quiz
                                     </a>
-
                                     <a href="javascript:void(0)" *ngIf="currentLanguage === 'hi'" class="dropdown-item hi free-quiz"
                                         (click)="openFreeQuiz()">
                                         क्विज़
+                                    </a>
+                                    <a href="javascript:void(0)" *ngIf="currentLanguage === 'en'" class="dropdown-item en"
+                                        (click)="openDemoTests()">
+                                        Demo Test
+                                    </a>
+                                    <a href="javascript:void(0)" *ngIf="currentLanguage === 'hi'" class="dropdown-item hi"
+                                        (click)="openDemoTests()">
+                                        डेमो टेस्ट
                                     </a>
                                 </ng-container>
                             </div>
@@ -197,6 +204,12 @@
                 </a>
                 <a href="javascript:void(0)" *ngIf="currentLanguage === 'hi'" class="d-block py-2 ps-4 hi free-quiz" (click)="openFreeQuiz(); closeMobileMenu()">
                     क्विज़
+                </a>
+                <a href="javascript:void(0)" *ngIf="currentLanguage === 'en'" class="d-block py-2 ps-4 en" (click)="openDemoTests(); closeMobileMenu()">
+                    Demo Test
+                </a>
+                <a href="javascript:void(0)" *ngIf="currentLanguage === 'hi'" class="d-block py-2 ps-4 hi" (click)="openDemoTests(); closeMobileMenu()">
+                    डेमो टेस्ट
                 </a>
             </div>
         </li>
