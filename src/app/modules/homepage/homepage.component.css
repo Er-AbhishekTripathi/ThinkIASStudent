@@ -390,9 +390,9 @@
 
 /* Language Display Logic */
 .hi { display: none; }
-.en { display: block; }
+.en { display: inline-block; }
 
-body.hindi .hi { display: block !important; }
+body.hindi .hi { display: inline-block !important; }
 body.hindi .en { display: none !important; }
 
 /* Fix for list items with both languages */
