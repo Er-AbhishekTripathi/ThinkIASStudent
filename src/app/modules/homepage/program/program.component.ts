@@ -9,7 +9,7 @@ import { environment } from '../../../../environment/environment';
 export interface Program {
   _id?: string;
   programName: string;
-  programNameHindi?: string; descriptionHindi?: string; durationHindi?: string; featuresHindi?: string[];
+  programNameHindi?: string; descriptionHindi?: string; durationHindi?: string; featuresHindi?: string[]; displayImageHindi?: string;
   programCategory: string;
   year: string;
   price: number;
@@ -163,6 +163,13 @@ export class ProgramComponent implements OnInit {
   // Handle image error
   handleImageError(event: any): void {
     event.target.src = 'assets/images/logo.png';
+  }
+
+  programImage(program: Program): string {
+    if (document.body.classList.contains('hindi') && program.displayImageHindi) {
+      return program.displayImageHindi;
+    }
+    return program.displayImage;
   }
 
   // Navigate to program details/batches page

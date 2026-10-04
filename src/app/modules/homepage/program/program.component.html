@@ -117,7 +117,7 @@
           <!-- Card Image -->
           <div class="card-image">
             <img 
-              [src]="program.displayImage" 
+              [src]="programImage(program)" 
               [alt]="program.programName"
               (error)="handleImageError($event)">
             <div class="card-overlay">
@@ -166,10 +166,10 @@
             
             <div class="program-price">
               <span class="current-price" *ngIf="program.discountedPrice">
-                ₹{{ program.price | number }}
+                ₹{{ program.discountedPrice | number }}
               </span>
               <span class="original-price" *ngIf="program.discountedPrice">
-                ₹{{ program.discountedPrice | number }}
+                ₹{{ program.price | number }}
               </span>
               <span class="price" *ngIf="!program.discountedPrice">
                 ₹{{ program.price | number }}
