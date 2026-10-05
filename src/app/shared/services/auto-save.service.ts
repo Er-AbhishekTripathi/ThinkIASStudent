@@ -14,7 +14,15 @@ export class AutoSaveService {
   loadProgress(testId: string): any {
     const key = this.STORAGE_KEY + testId;
     const data = localStorage.getItem(key);
-    return data ? JSON.parse(data) : null;
+    if (!data) return null;
+
+    try {
+      return JSON.parse(data);
+    } catch (error) {
+      console.warn('Discarding invalid saved test progress:', error);
+      this.clearProgress(testId);
+      return null;
+    }
   }
 
   clearProgress(testId: string): void {

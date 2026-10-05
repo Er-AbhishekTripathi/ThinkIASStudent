@@ -1,8 +1,9 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { ActivatedRoute } from '@angular/router';
+import { Subscription } from 'rxjs';
 import { environment } from '../../../environment/environment';
 import { AuthService } from '../../shared/services/auth.service';
 import { TranslatePipe } from '../../shared/i18n/translate.pipe';
@@ -76,6 +77,7 @@ import { TranslatePipe } from '../../shared/i18n/translate.pipe';
             <div class="attachments" *ngIf="message.attachments?.length">
               <a *ngFor="let file of message.attachments" [href]="file.url" target="_blank" rel="noopener">📎 {{file.name}}</a>
             </div>
+            <small class="message-time" *ngIf="message.createdAt">{{message.createdAt | date:'dd/MM/yyyy hh:mma'}}</small>
           </div>
         </div>
       </div>
@@ -168,6 +170,7 @@ import { TranslatePipe } from '../../shared/i18n/translate.pipe';
     .message.admin .message-bubble{background:#e8f6ee}
     .message-bubble b{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:#64748b}
     .message-bubble p{margin:4px 0 0;font-size:14px;color:#1e293b;white-space:pre-wrap}
+    .message-time{display:block;margin-top:8px;text-align:right;font-size:10px;color:#64748b;white-space:nowrap}
     .attachments{display:flex;flex-direction:column;gap:4px;margin-top:8px}
     .attachments a{font-size:12px;color:#1d5374;text-decoration:none}
     .attachments a:hover{text-decoration:underline}
@@ -198,14 +201,22 @@ import { TranslatePipe } from '../../shared/i18n/translate.pipe';
     @media (max-width:860px){.layout{grid-template-columns:1fr}}
   `]
 })
-export class SupportTicketsComponent implements OnInit {
+export class SupportTicketsComponent implements OnInit, OnDestroy {
   private http = inject(HttpClient);
   private auth = inject(AuthService);
   private route = inject(ActivatedRoute);
   tickets: any[] = []; selected: any = null; status = ''; error = '';
   showCreate = false; subject = ''; body = ''; replyBody = ''; files: File[] = [];
+  private routeSubscription?: Subscription;
   get isAdmin() { return this.auth.currentUser()?.role === 'admin'; }
-  ngOnInit() { this.load(); const id = this.route.snapshot.queryParamMap.get('id'); if (id) this.open(id); }
+  ngOnInit() {
+    this.load();
+    this.routeSubscription = this.route.queryParamMap.subscribe(params => {
+      const id = params.get('id');
+      if (id) this.open(id);
+    });
+  }
+  ngOnDestroy() { this.routeSubscription?.unsubscribe(); }
   load() {
     const params: any = {}; if (this.status) params.status = this.status;
     this.http.get<any>(`${environment.apiUrl}/support-tickets`, { params }).subscribe({
