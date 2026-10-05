@@ -17,80 +17,70 @@
     <div class="container">
       <div class="filters-wrapper">
         <div class="filter-group">
-          <label>
+          <label for="program-examination-filter">
             <i class="fas fa-university"></i>
             {{ 'Examination' | t }}
           </label>
-          <div class="filter-buttons">
-            <button
-              *ngFor="let examination of examinations"
-              class="filter-btn"
-              [class.active]="selectedExamination === examination"
-              (click)="selectedExamination = examination; onCategoryChange()">
-              {{ examination === 'All' ? ('All' | t) : examination }}
-              <span class="count">{{ getExaminationCount(examination) }}</span>
-            </button>
-          </div>
+          <select
+            id="program-examination-filter"
+            class="filter-select"
+            [(ngModel)]="selectedExamination"
+            (ngModelChange)="onCategoryChange()">
+            <option *ngFor="let examination of examinations" [ngValue]="examination">
+              {{ examination === 'All' ? ('All' | t) : examination }} ({{ getExaminationCount(examination) }})
+            </option>
+          </select>
         </div>
 
         <div class="filter-group">
-          <label>
+          <label for="program-stage-filter">
             <i class="fas fa-route"></i>
             {{ 'Program' | t }}
           </label>
-          <div class="filter-buttons">
-            <button
-              *ngFor="let stage of stages"
-              class="filter-btn"
-              [class.active]="selectedStage === stage"
-              (click)="selectedStage = stage; onCategoryChange()">
-              {{ stage === 'All' ? ('All' | t) : (stage | t) }}
-              <span class="count">{{ getStageCount(stage) }}</span>
-            </button>
-          </div>
+          <select
+            id="program-stage-filter"
+            class="filter-select"
+            [(ngModel)]="selectedStage"
+            (ngModelChange)="onCategoryChange()">
+            <option *ngFor="let stage of stages" [ngValue]="stage">
+              {{ stage === 'All' ? ('All' | t) : (stage | t) }} ({{ getStageCount(stage) }})
+            </option>
+          </select>
         </div>
 
         <!-- Plan filter -->
         <div class="filter-group">
-          <label>
+          <label for="program-category-filter">
             <i class="fas fa-filter"></i>
             {{ 'Plan' | t }}
           </label>
-          <div class="filter-buttons">
-            <button 
-              *ngFor="let category of categories"
-              class="filter-btn"
-              [class.active]="selectedCategory === category"
-              (click)="selectedCategory = category; onCategoryChange()">
-              {{ category | t }}
-              <span class="count">{{ getCategoryCount(category) }}</span>
-            </button>
-          </div>
+          <select
+            id="program-category-filter"
+            class="filter-select"
+            [(ngModel)]="selectedCategory"
+            (ngModelChange)="onCategoryChange()">
+            <option *ngFor="let category of categories" [ngValue]="category">
+              {{ category | t }} ({{ getCategoryCount(category) }})
+            </option>
+          </select>
         </div>
 
         <!-- Year Filter -->
         <div class="filter-group">
-          <label>
+          <label for="program-year-filter">
             <i class="fas fa-calendar-alt"></i>
             {{ 'Year' | t }}
           </label>
-          <div class="filter-buttons">
-            <button 
-              class="filter-btn"
-              [class.active]="selectedYear === 'All'"
-              (click)="selectedYear = 'All'; onYearChange()">
-              {{ 'All Years' | t }}
-              <span class="count">{{ allPrograms.length }}</span>
-            </button>
-            <button 
-              *ngFor="let year of years"
-              class="filter-btn"
-              [class.active]="selectedYear === year"
-              (click)="selectedYear = year; onYearChange()">
-              {{ year }}
-              <span class="count">{{ getYearCount(year) }}</span>
-            </button>
-          </div>
+          <select
+            id="program-year-filter"
+            class="filter-select"
+            [(ngModel)]="selectedYear"
+            (ngModelChange)="onYearChange()">
+            <option [ngValue]="'All'">{{ 'All Years' | t }} ({{ allPrograms.length }})</option>
+            <option *ngFor="let year of years" [ngValue]="year">
+              {{ year }} ({{ getYearCount(year) }})
+            </option>
+          </select>
         </div>
 
         <!-- Reset Button -->
