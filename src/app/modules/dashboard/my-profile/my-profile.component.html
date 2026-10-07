@@ -27,7 +27,10 @@
       <mat-card class="profile-card">
         <mat-card-header class="profile-header">
           <div class="profile-avatar">
-            <mat-icon class="avatar-icon">account_circle</mat-icon>
+            <img *ngIf="imagePreview; else profileAvatarFallback" [src]="imagePreview" alt="Profile picture" class="avatar-image" (error)="onProfileImageError()" />
+            <ng-template #profileAvatarFallback>
+              <mat-icon class="avatar-icon">account_circle</mat-icon>
+            </ng-template>
           </div>
           <div class="profile-info">
             <mat-card-title class="profile-name">{{ user.fullName }}</mat-card-title>
@@ -71,7 +74,138 @@
                 <span class="info-value">{{ formatDate(user.updatedAt) || 'Recently' }}</span>
               </div>
             </div>
+
+            <div class="info-item">
+              <mat-icon class="info-icon">location_on</mat-icon>
+              <div class="info-content">
+                <span class="info-label">PIN Code</span>
+                <span class="info-value">{{ user.address?.pincode || user.pincode || 'Not provided' }}</span>
+              </div>
+            </div>
+
+            <div class="info-item">
+              <mat-icon class="info-icon">home</mat-icon>
+              <div class="info-content">
+                <span class="info-label">House No.</span>
+                <span class="info-value">{{ user.address?.houseNo || user.houseNo || 'Not provided' }}</span>
+              </div>
+            </div>
+
+            <div class="info-item">
+              <mat-icon class="info-icon">place</mat-icon>
+              <div class="info-content">
+                <span class="info-label">Locality</span>
+                <span class="info-value">{{ user.address?.locality || user.locality || 'Not provided' }}</span>
+              </div>
+            </div>
+
+            <div class="info-item">
+              <mat-icon class="info-icon">domain</mat-icon>
+              <div class="info-content">
+                <span class="info-label">Colony</span>
+                <span class="info-value">{{ user.address?.colony || user.colony || 'Not provided' }}</span>
+              </div>
+            </div>
+
+            <div class="info-item">
+              <mat-icon class="info-icon">location_city</mat-icon>
+              <div class="info-content">
+                <span class="info-label">City</span>
+                <span class="info-value">{{ user.address?.city || user.city || 'Not provided' }}</span>
+              </div>
+            </div>
           </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <div class="edit-profile-section">
+      <mat-card class="security-card">
+        <mat-card-header>
+          <mat-card-title>Edit Profile</mat-card-title>
+          <mat-card-subtitle>Update your name, mobile number and profile picture.</mat-card-subtitle>
+        </mat-card-header>
+
+        <mat-card-content>
+          <form [formGroup]="profileForm" (ngSubmit)="saveProfile()" class="profile-form">
+            <div class="profile-editor-row">
+              <div class="avatar-upload-box" (click)="profileImageInput.click()">
+                <img *ngIf="imagePreview; else defaultAvatar" [src]="imagePreview" alt="Profile preview" (error)="onProfileImageError()" />
+                <ng-template #defaultAvatar>
+                  <div class="default-avatar">
+                    <mat-icon>account_circle</mat-icon>
+                  </div>
+                </ng-template>
+                <span class="upload-label">Change Photo</span>
+              </div>
+              <input #profileImageInput type="file" accept="image/jpeg,image/png,image/webp,image/gif" hidden (change)="onProfileImageSelected($event)" />
+            </div>
+
+            <div class="profile-grid">
+              <mat-form-field appearance="outline">
+                <mat-label>Full Name</mat-label>
+                <input matInput formControlName="fullName" />
+                <mat-error *ngIf="profileForm.get('fullName')?.hasError('required')">
+                  Full name is required.
+                </mat-error>
+                <mat-error *ngIf="profileForm.get('fullName')?.hasError('minlength')">
+                  Full name must be at least 2 characters.
+                </mat-error>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label>Mobile Number</mat-label>
+                <input matInput formControlName="phone" />
+                <mat-error *ngIf="profileForm.get('phone')?.hasError('required')">
+                  Mobile number is required.
+                </mat-error>
+                <mat-error *ngIf="profileForm.get('phone')?.hasError('pattern')">
+                  Enter a valid mobile number.
+                </mat-error>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline" class="full-width readonly-field">
+                <mat-label>Email</mat-label>
+                <input matInput [value]="user.email" readonly />
+                <mat-hint>Email address cannot be changed.</mat-hint>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label>PIN Code</mat-label>
+                <input matInput formControlName="pincode" autocomplete="postal-code" />
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label>House No.</mat-label>
+                <input matInput formControlName="houseNo" autocomplete="address-line1" />
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label>Locality</mat-label>
+                <input matInput formControlName="locality" autocomplete="address-line2" />
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label>Colony</mat-label>
+                <input matInput formControlName="colony" />
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label>City</mat-label>
+                <input matInput formControlName="city" autocomplete="address-level2" />
+              </mat-form-field>
+            </div>
+
+            <div class="form-actions">
+              <button mat-raised-button color="primary" type="submit" [disabled]="updatingProfile">
+                <mat-icon>save</mat-icon>
+                {{ updatingProfile ? 'Saving...' : 'Save Profile' }}
+              </button>
+            </div>
+
+            <p *ngIf="profileMessage" class="success-message">{{ profileMessage }}</p>
+            <p *ngIf="profileError" class="error-message">{{ profileError }}</p>
+          </form>
         </mat-card-content>
       </mat-card>
     </div>
@@ -100,6 +234,53 @@
               Upgrade / Change Plan
             </button>
           </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <div class="security-section">
+      <mat-card class="security-card">
+        <mat-card-header>
+          <mat-card-title>Change Password</mat-card-title>
+          <mat-card-subtitle>Update your account password for secure access.</mat-card-subtitle>
+        </mat-card-header>
+
+        <mat-card-content>
+          <form [formGroup]="passwordForm" (ngSubmit)="updatePassword()" class="password-form">
+            <div class="password-grid">
+              <mat-form-field appearance="outline">
+                <mat-label>New Password</mat-label>
+                <input matInput type="password" formControlName="password" autocomplete="new-password" />
+                <mat-error *ngIf="passwordForm.get('password')?.hasError('required')">
+                  Password is required.
+                </mat-error>
+                <mat-error *ngIf="passwordForm.get('password')?.hasError('minlength')">
+                  Password must be at least 6 characters.
+                </mat-error>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label>Confirm New Password</mat-label>
+                <input matInput type="password" formControlName="confirmPassword" autocomplete="new-password" />
+                <mat-error *ngIf="passwordForm.get('confirmPassword')?.hasError('required')">
+                  Please confirm your password.
+                </mat-error>
+                <mat-error *ngIf="passwordForm.hasError('passwordMismatch') && passwordForm.get('confirmPassword')?.touched">
+                  Passwords do not match.
+                </mat-error>
+              </mat-form-field>
+            </div>
+
+            <div class="form-actions">
+              <button mat-raised-button color="primary" type="submit" [disabled]="updatingPassword">
+                <mat-icon>lock_reset</mat-icon>
+                {{ updatingPassword ? 'Updating...' : 'Change Password' }}
+              </button>
+            </div>
+
+            <p *ngIf="passwordMessage" class="success-message">{{ passwordMessage }}</p>
+            <p *ngIf="passwordError" class="error-message">{{ passwordError }}</p>
+          </form>
         </mat-card-content>
       </mat-card>
     </div>

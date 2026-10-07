@@ -58,6 +58,8 @@ interface EvaluationItem {
     answerHindi: string;
     modelAnswerPDF: string;
     modelAnswerPDFHi: string;
+    releaseStartAt: Date | null;
+    releaseEndAt: Date | null;
     isActive: boolean;
   } | null;
   evaluationCount: number;
@@ -253,6 +255,14 @@ interface EvaluationItem {
                 {{ selectedEvaluation.modelAnswer.isActive ? (isHindiMode ? 'सक्रिय' : 'Active') : (isHindiMode ? 'निष्क्रिय' : 'Inactive') }}
               </span>
             </div>
+
+            <p class="model-answer-availability" *ngIf="selectedEvaluation.modelAnswer.releaseStartAt && selectedEvaluation.modelAnswer.releaseEndAt">
+              <i class="far fa-calendar-alt"></i>
+              {{ isHindiMode ? 'उपलब्धता अवधि:' : 'Available:' }}
+              {{ selectedEvaluation.modelAnswer.releaseStartAt | date:'MMM d, y, h:mm a' }}
+              -
+              {{ selectedEvaluation.modelAnswer.releaseEndAt | date:'MMM d, y, h:mm a' }}
+            </p>
             
             <div class="model-content">
               <!-- Remark -->

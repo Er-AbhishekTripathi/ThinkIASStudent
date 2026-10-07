@@ -57,6 +57,7 @@ export interface DemoResult {
     _id: string;
     title: string;
     description: string;
+    introPage?: string;
     duration: number;
     marksPerQuestion: number;
     negativeMarks: number;

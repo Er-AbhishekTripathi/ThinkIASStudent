@@ -9,7 +9,7 @@ import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environment/environment';
 import { MatDialog } from '@angular/material/dialog';
 import { AuthService } from '../../shared/services/auth.service';
-import { TestService } from '../../shared/services/test.service';
+import { Test, TestService } from '../../shared/services/test.service';
 import { LiveTest, LiveTestService } from '../../shared/services/live-test.service';
 import { PaymentDialogComponent } from './payment-dialog/payment-dialog.component';
 import { UserService } from '../../shared/services/user.service';
@@ -20,6 +20,13 @@ import { ReviewSliderComponent } from '../homepage/review-slider/review-slider.c
 import { Chart, registerables } from 'chart.js';
 
 Chart.register(...registerables);
+
+export function filterUpcomingTests(tests: Test[], now = Date.now()): Test[] {
+  return tests.filter(test => {
+    const expiryTime = new Date(test.reopenUntil || test.endTime || '').getTime();
+    return !test.submitted && Number.isFinite(expiryTime) && expiryTime > now;
+  });
+}
 
 @Component({
   selector: 'app-dashboard',
@@ -152,7 +159,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
     
     this.testService.getUpcomingTests().subscribe({
       next: (tests) => {
-        this.upcomingTests.set(tests.slice(0, 3));
+        this.upcomingTests.set(filterUpcomingTests(tests));
       },
       error: (error) => {
         console.error('Error loading upcoming tests:', error);

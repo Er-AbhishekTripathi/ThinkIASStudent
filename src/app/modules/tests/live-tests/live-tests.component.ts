@@ -17,6 +17,11 @@ import { AuthService } from '../../../shared/services/auth.service';
 import { TestService } from '../../../shared/services/test.service';
 import { CreateTestDialogComponent } from '../create-test-dialog/create-test-dialog.component';
 
+export function isTestExpired(test: any, now = Date.now()): boolean {
+  const expiry = new Date(test?.reopenUntil || test?.endTime || '').getTime();
+  return Number.isFinite(expiry) && expiry <= now;
+}
+
 @Component({
   selector: 'app-live-tests',
   standalone: true,
@@ -58,7 +63,7 @@ export class LiveTestsComponent implements OnInit, OnDestroy {
     return this.tests()
       .filter((test) => {
         const text = [test.title, test.description, test.titleHi, test.descriptionHi].join(' ').toLowerCase();
-        const matchesSearch = !query || text.includes(query);
+        const matchesSearch = !query || (!isTestExpired(test, this.now) && text.includes(query));
         const matchesStatus = this.matchesStatusFilter(test);
         const matchesFrom = !this.dateFrom || new Date(test.startTime).getTime() >= new Date(`${this.dateFrom}T00:00:00`).getTime();
         const matchesTo = !this.dateTo || new Date(test.startTime).getTime() <= new Date(`${this.dateTo}T23:59:59`).getTime();
@@ -203,6 +208,7 @@ export class LiveTestsComponent implements OnInit, OnDestroy {
   // }
 
   canStartTest(test: any): boolean {
+    if (this.isTestExpired(test)) return false;
     if (test.canTake) return true;
     if (!test.startTime || !test.endTime) return false;
     const now = new Date();
@@ -210,6 +216,10 @@ export class LiveTestsComponent implements OnInit, OnDestroy {
     const endTime = new Date(test.reopenUntil || test.endTime);
     if (test.reopened || test.reopenUntil) return now <= endTime;
     return now >= startTime && now <= endTime;
+  }
+
+  isTestExpired(test: any): boolean {
+    return isTestExpired(test, this.now);
   }
 
   showTestRules(test: any) {

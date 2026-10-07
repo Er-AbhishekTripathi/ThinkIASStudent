@@ -434,6 +434,20 @@
 }
 
 /* Model Answer Section */
+.model-answer-availability {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 16px;
+  padding: 10px 12px;
+  border: 1px solid #bfdbfe;
+  border-radius: 8px;
+  background: #eff6ff;
+  color: #1e40af;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
 .model-answer-section {
   background: #f0fdf4;
   border: 1px solid #bbf7d0;

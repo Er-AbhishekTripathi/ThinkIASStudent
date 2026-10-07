@@ -24,11 +24,14 @@ export interface Test {
   description: string;
   startTime: string;
   duration: number;
+  introPage?: string;
   questions: Question[];
   endTime?: string;
   isActive?: boolean;
   totalQuestions?: number;
   totalMarks?: number;
+  submitted?: boolean;
+  reopenUntil?: string;
 }
 
 // export interface Question {
@@ -149,6 +152,7 @@ export interface DetailedResult {
     description: string;
     startTime: string;
     duration: number;
+    introPage?: string;
     marksPerQuestion: number;
     negativeMarks: number;
     questionUids: string[];

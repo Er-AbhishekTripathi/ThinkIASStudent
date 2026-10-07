@@ -80,7 +80,7 @@
 }
 .student-actions .start-test-button[disabled] mat-icon { color: #71817d !important; }
 .available { color: #198754; font-weight: 800; }
-.ended { color: #b45309; font-weight: 800; }
+.ended { color: #dc2626; font-weight: 800; }
 .availability-row { display: flex; align-items: center; gap: 6px; margin-top: 9px; font-weight: 800; }
 .availability-row mat-icon { width: 19px; height: 19px; font-size: 19px; }
 .no-tests mat-card { padding: 38px; border: 1px solid #e0e8ee; border-radius: 16px; text-align: center; }

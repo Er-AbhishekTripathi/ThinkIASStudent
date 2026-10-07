@@ -20,10 +20,15 @@
               Detailed Result Analysis
             </mat-card-subtitle>
           </div>
-          <button mat-stroked-button color="primary" type="button" (click)="downloadQuestionPaper()">
+          <button mat-stroked-button color="primary" type="button" [matMenuTriggerFor]="questionPaperLanguageMenu">
             <mat-icon>download</mat-icon>
             Download Question Paper
+            <mat-icon>arrow_drop_down</mat-icon>
           </button>
+          <mat-menu #questionPaperLanguageMenu="matMenu">
+            <button mat-menu-item type="button" (click)="downloadQuestionPaper('english')">English PDF</button>
+            <button mat-menu-item type="button" (click)="downloadQuestionPaper('hindi')">हिन्दी PDF</button>
+          </mat-menu>
         </div>
       </mat-card-header>
 
