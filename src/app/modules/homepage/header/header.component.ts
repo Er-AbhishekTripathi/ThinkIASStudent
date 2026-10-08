@@ -57,12 +57,13 @@ export class HeaderComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private http = inject(HttpClient);
   programs: any[] = [];
-  programGroups = [
-    {label:'Mentorship Program',hi:'मेंटरशिप प्रोग्राम',categories:['Mentorship Course','Optional Mentorship Course']},
-    {label:'Test Series',hi:'टेस्ट सीरीज',categories:['Test Series','Optional Test Series']},
-    {label:'Essay',hi:'निबंध',categories:['Essay','Qualifying Paper']}
-  ];
-  groupPrograms(group:any){return this.programs.filter(p=>group.categories.includes(p.programCategory));}
+  programGroups: Array<{label:string;hi:string;examination:string}> = [];
+  groupPrograms(group:any){
+    return this.programs.filter((program) => {
+      const examName = typeof program.examId === 'object' && program.examId?.name ? program.examId.name : (program.examination || '');
+      return examName === group.examination;
+    });
+  }
   programDisplayName(program: any): string {
     if (this.currentLanguage !== 'hi') return program.programName;
     return program.programNameHindi?.trim() || this.languageService.text(program.programName);
@@ -86,7 +87,7 @@ export class HeaderComponent implements OnInit, AfterViewInit, OnDestroy {
     //   offset: 100
     // });
     
-    this.http.get<any>(environment.apiUrl + '/programs?activeOnly=true').subscribe({next:r=>this.programs=r.data||[],error:()=>this.programs=[]});
+    this.loadCatalog();
     this.checkMobileView();
     this.initializeLanguage();
     this.startLiveClock();
@@ -115,8 +116,24 @@ export class HeaderComponent implements OnInit, AfterViewInit, OnDestroy {
   
   @HostListener('window:resize', ['$event'])
   onResize(event: any) {
-    this.http.get<any>(environment.apiUrl + '/programs?activeOnly=true').subscribe({next:r=>this.programs=r.data||[],error:()=>this.programs=[]});
     this.checkMobileView();
+  }
+
+  private loadCatalog(): void {
+    this.http.get<any>(environment.apiUrl + '/exams').subscribe({
+      next: (response) => {
+        this.programGroups = (response?.data || []).map((exam: any) => ({
+          label: exam.name,
+          hi: exam.nameHindi || exam.name,
+          examination: exam.name
+        }));
+      },
+      error: () => { this.programGroups = []; }
+    });
+    this.http.get<any>(environment.apiUrl + '/programs?activeOnly=true').subscribe({
+      next: (response) => { this.programs = response.data || []; },
+      error: () => { this.programs = []; }
+    });
   }
   
   checkMobileView() {
