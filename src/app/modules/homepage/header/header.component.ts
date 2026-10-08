@@ -84,7 +84,7 @@ export class HeaderComponent implements OnInit, AfterViewInit, OnDestroy {
     //   offset: 100
     // });
     
-    this.http.get<any>(environment.apiUrl + '/programs?activeOnly=true').subscribe({next:r=>this.programs=r.data||[],error:()=>this.programs=[]});
+    this.loadCatalog();
     this.checkMobileView();
     this.initializeLanguage();
     this.startLiveClock();
@@ -113,8 +113,24 @@ export class HeaderComponent implements OnInit, AfterViewInit, OnDestroy {
   
   @HostListener('window:resize', ['$event'])
   onResize(event: any) {
-    this.http.get<any>(environment.apiUrl + '/programs?activeOnly=true').subscribe({next:r=>this.programs=r.data||[],error:()=>this.programs=[]});
     this.checkMobileView();
+  }
+
+  private loadCatalog(): void {
+    this.http.get<any>(environment.apiUrl + '/exams').subscribe({
+      next: (response) => {
+        this.programGroups = (response?.data || []).map((exam: any) => ({
+          label: exam.name,
+          hi: exam.nameHindi || exam.name,
+          examination: exam.name
+        }));
+      },
+      error: () => { this.programGroups = []; }
+    });
+    this.http.get<any>(environment.apiUrl + '/programs?activeOnly=true').subscribe({
+      next: (response) => { this.programs = response.data || []; },
+      error: () => { this.programs = []; }
+    });
   }
   
   checkMobileView() {

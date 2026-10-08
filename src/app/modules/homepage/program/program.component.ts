@@ -3,7 +3,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClientModule, HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterModule } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { environment } from '../../../../environment/environment';
 
 export interface Program {
@@ -35,10 +35,11 @@ export interface Program {
 export class ProgramComponent implements OnInit {
   allPrograms: Program[] = [];
   filteredPrograms: Program[] = [];
-  categories: string[] = ['All', 'Mentorship Course', 'Optional Mentorship Course', 'Test Series', 'Optional Test Series', 'Essay', 'Qualifying Paper', 'Prelims Program', 'Mains Program', 'Interview Program'];
-  examinations: string[] = ['All', 'UPSC', 'UPPSC', 'APSC', 'EPFO'];
-  stages: string[] = ['All', 'Prelims', 'Mains', 'Interview', 'Combo I', 'Combo II'];
+  categories: string[] = ['All'];
+  examinations: string[] = ['All'];
+  stages: string[] = ['All'];
   years: string[] = [];
+  plans: any[] = [];
   
   // Filter selections: examination, then program, then plan, then year
   selectedExamination: string = 'All';
@@ -51,11 +52,58 @@ export class ProgramComponent implements OnInit {
 
   constructor(
     private http: HttpClient,
-    private router: Router
+    private router: Router,
+    private route: ActivatedRoute
   ) {}
 
   ngOnInit(): void {
+    this.route.queryParamMap.subscribe((params) => {
+      this.selectedExamination = params.get('examination') || this.selectedExamination;
+      this.selectedStage = params.get('stage') || this.selectedStage;
+      this.selectedCategory = params.get('category') || this.selectedCategory;
+      this.applyFilters();
+    });
+    this.http.get<any>(`${environment.apiUrl}/exams`).subscribe({
+      next: (response) => {
+        const names = (response?.data || []).map((exam: any) => exam.name).filter(Boolean);
+        this.examinations = ['All', ...names];
+      }
+    });
+    this.http.get<any>(`${environment.apiUrl}/program-stages`).subscribe({
+      next: (response) => {
+        const names = (response?.data || []).map((item: any) => item.name).filter(Boolean);
+        this.stages = ['All', ...names];
+      }
+    });
+    this.http.get<any>(`${environment.apiUrl}/plans`).subscribe({
+      next: (response) => {
+        this.plans = Array.isArray(response) ? response : (response?.data || []);
+        this.refreshCategories();
+      }
+    });
     this.fetchPrograms();
+  }
+
+  private unique(values: string[]): string[] {
+    return [...new Set(values.filter(Boolean))];
+  }
+
+  examName(program: Program): string {
+    const mapped = (program as any).examId;
+    if (mapped && typeof mapped === 'object' && mapped.name) return mapped.name;
+    return program.examination || '';
+  }
+
+  idOf(value: any): string {
+    if (!value) return '';
+    return typeof value === 'string' ? value : (value._id || '');
+  }
+
+  refreshCategories(): void {
+    this.categories = ['All', ...this.unique([
+      ...this.plans.map((plan) => plan.name),
+      ...this.allPrograms.map((program) => program.programCategory)
+    ])];
   }
 
   // Fetch active programs from backend
@@ -71,6 +119,11 @@ export class ProgramComponent implements OnInit {
           this.allPrograms = [];
         }
         this.extractYears();
+        this.refreshCategories();
+        const examNames = this.unique(this.allPrograms.map((program) => this.examName(program)));
+        examNames.forEach((name) => { if (!this.examinations.includes(name)) this.examinations = [...this.examinations, name]; });
+        const stageNames = this.unique(this.allPrograms.map((program) => program.programStage || ''));
+        stageNames.forEach((name) => { if (name && !this.stages.includes(name)) this.stages = [...this.stages, name]; });
         this.applyFilters();
         this.isLoading = false;
       },
@@ -131,10 +184,10 @@ export class ProgramComponent implements OnInit {
   // Apply category and year filters
   applyFilters(): void {
     this.filteredPrograms = this.allPrograms.filter(program => {
-      const examination = program.examination || 'UPSC';
+      const examination = this.examName(program) || 'UPSC';
       const examinationMatch = this.selectedExamination === 'All' || examination === this.selectedExamination;
       const stageMatch = this.selectedStage === 'All' || program.programStage === this.selectedStage;
-      const categoryMatch = this.selectedCategory === 'All' || program.programCategory === this.selectedCategory;
+      const categoryMatch = this.selectedCategory === 'All' || this.matchesPlan(program);
       const yearMatch = this.selectedYear === 'All' || program.year === this.selectedYear;
       return examinationMatch && stageMatch && categoryMatch && yearMatch;
     });
@@ -159,9 +212,17 @@ export class ProgramComponent implements OnInit {
     this.applyFilters();
   }
 
+  matchesPlan(program: Program): boolean {
+    if (this.selectedCategory === 'All') return true;
+    const plan = this.plans.find((item) => item.name === this.selectedCategory || item.id === this.selectedCategory);
+    const ids = (plan?.programIds || []).map((id: any) => this.idOf(id)).filter(Boolean);
+    if (ids.length) return ids.includes(program._id);
+    return program.programCategory === this.selectedCategory;
+  }
+
   getExaminationCount(examination: string): number {
     if (examination === 'All') return this.allPrograms.length;
-    return this.allPrograms.filter(program => (program.examination || 'UPSC') === examination).length;
+    return this.allPrograms.filter(program => this.examName(program) === examination).length;
   }
 
   getStageCount(stage: string): number {

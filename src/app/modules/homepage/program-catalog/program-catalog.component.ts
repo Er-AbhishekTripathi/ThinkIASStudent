@@ -21,8 +21,8 @@ import {TranslatePipe} from '../../../shared/i18n/translate.pipe';
 			</header>
 
 			<section class="catalog-toolbar" aria-label="Program filters">
-				<label><span>Examination</span><select [(ngModel)]="examination"><option value="">All examinations</option><option *ngFor="let exam of examinations" [value]="exam">{{exam}}</option></select></label>
-				<label><span>Program</span><select [(ngModel)]="stage"><option value="">All programs</option><option *ngFor="let stageName of stages" [value]="stageName">{{stageName}}</option></select></label>
+				<label><span>Examination</span><select [(ngModel)]="examination"><option value="">All examinations</option><option *ngFor="let exam of examinations" [value]="exam.name">{{ examLabel(exam) }}</option></select></label>
+				<label><span>Program</span><select [(ngModel)]="stage"><option value="">All programs</option><option *ngFor="let item of stages" [value]="item.name">{{ stageLabel(item) }}</option></select></label>
 				<label><span>Plan</span><select [(ngModel)]="category"><option value="">All plans</option><option *ngFor="let c of categories" [value]="c">{{c}}</option></select></label>
 				<label><span>Year</span><select [(ngModel)]="year"><option value="">All years</option><option *ngFor="let y of years" [value]="y">{{y}}</option></select></label>
 				<label class="search-field"><span>Search programs</span><i class="fas fa-search"></i><input [(ngModel)]="search" placeholder="Find a program"></label>
@@ -55,12 +55,52 @@ import {TranslatePipe} from '../../../shared/i18n/translate.pipe';
 export class ProgramCatalogComponent implements OnInit {
 	private http=inject(HttpClient); private route=inject(ActivatedRoute);
 	programs:any[]=[]; examination=''; stage=''; category=''; year=''; search=''; error=''; loading=true;
-	examinations=['UPSC','UPPSC','APSC','EPFO'];
-	stages=['Prelims','Mains','Interview','Combo I','Combo II'];
-	categories=['Mentorship Course','Optional Mentorship Course','Test Series','Optional Test Series','Essay','Qualifying Paper','Prelims Program','Mains Program','Interview Program'];
-	get years(){return [...new Set(this.programs.map(p=>p.year))].sort().reverse();}
-	get visible(){const query=this.search.toLowerCase();return this.programs.filter(p=>(!this.examination||(p.examination||'UPSC')===this.examination)&&(!this.stage||p.programStage===this.stage)&&(!this.category||p.programCategory===this.category)&&(!this.year||p.year===this.year)&&[p.programName,p.programNameHindi,p.description].join(' ').toLowerCase().includes(query));}
+	examinations:any[]=[];
+	stages:any[]=[];
+	categories:string[]=[];
+	plans:any[]=[];
+	get years(){return [...new Set(this.programs.map(p=>p.year).filter(Boolean))].sort().reverse();}
+	get visible(){const query=this.search.toLowerCase();return this.programs.filter(p=>(!this.examination||this.examName(p)===this.examination)&&(!this.stage||p.programStage===this.stage)&&this.matchesPlan(p)&&(!this.year||p.year===this.year)&&[p.programName,p.programNameHindi,p.description].join(' ').toLowerCase().includes(query));}
 	featureText(feature:unknown):string{return String(feature ?? '');}
 	featureHindi(program:any,index:number):string|undefined{return program?.featuresHindi?.[index] as string|undefined;}
-	ngOnInit(){this.route.queryParamMap.subscribe(q=>this.category=q.get('category')||'');this.http.get<any>(environment.apiUrl+'/programs?activeOnly=true').subscribe({next:r=>{this.programs=Array.isArray(r)?r:(r?.data||[]);this.loading=false;},error:()=>{this.error='Unable to load programs.';this.loading=false;}});}
+	examName(program:any):string{return typeof program?.examId==='object'&&program.examId?.name?program.examId.name:(program?.examination||'');}
+	examLabel(exam:any):string{return document.body.classList.contains('lang-hi')?(exam.nameHindi||exam.name):exam.name;}
+	stageLabel(stage:any):string{return document.body.classList.contains('lang-hi')?(stage.nameHindi||stage.name):stage.name;}
+	private unique(values:string[]):string[]{return [...new Set(values.filter(Boolean))];}
+	idOf(value:any):string{return !value?'':(typeof value==='string'?value:(value._id||''));}
+	matchesPlan(program:any):boolean{
+		if(!this.category) return true;
+		const plan=this.plans.find(item=>item.name===this.category||item.id===this.category);
+		const ids=(plan?.programIds||[]).map((id:any)=>this.idOf(id)).filter(Boolean);
+		if(ids.length) return ids.includes(program._id);
+		return program.programCategory===this.category;
+	}
+	refreshPlanOptions():void{
+		this.categories=this.unique([
+			...this.plans.map(plan=>plan.name),
+			...this.programs.map(p=>p.programCategory)
+		]);
+	}
+	ngOnInit(){
+		this.route.queryParamMap.subscribe(q=>{
+			this.examination=q.get('examination')||'';
+			this.stage=q.get('stage')||'';
+			this.category=q.get('category')||'';
+		});
+		this.http.get<any>(environment.apiUrl+'/exams').subscribe({next:r=>{this.examinations=r?.data||[];}});
+		this.http.get<any>(environment.apiUrl+'/program-stages').subscribe({next:r=>{this.stages=r?.data||[];}});
+		this.http.get<any>(environment.apiUrl+'/plans').subscribe({next:r=>{this.plans=Array.isArray(r)?r:(r?.data||[]);this.refreshPlanOptions();}});
+		this.http.get<any>(environment.apiUrl+'/programs?activeOnly=true').subscribe({
+			next:r=>{
+				this.programs=Array.isArray(r)?r:(r?.data||[]);
+				this.refreshPlanOptions();
+				const examNames=this.unique(this.programs.map(p=>this.examName(p)));
+				examNames.forEach(name=>{if(!this.examinations.some(exam=>exam.name===name)) this.examinations=[...this.examinations,{name}];});
+				const stageNames=this.unique(this.programs.map(p=>p.programStage));
+				stageNames.forEach(name=>{if(!this.stages.some(stage=>stage.name===name)) this.stages=[...this.stages,{name}];});
+				this.loading=false;
+			},
+			error:()=>{this.error='Unable to load programs.';this.loading=false;}
+		});
+	}
 }
