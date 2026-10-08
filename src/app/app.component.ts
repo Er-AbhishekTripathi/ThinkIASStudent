@@ -93,6 +93,7 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewChecked {
       filter(event => event instanceof NavigationEnd)
     ).subscribe((event: NavigationEnd) => {
       if (this.authService.isLoggedIn() && !this.notificationService.notifications().length) this.notificationService.load();
+      if (this.authService.isLoggedIn()) this.notificationService.startPolling();
       this.currentRoute.set(event.url);
       // Close sidenav on mobile after navigation
       if (this.isMobile()) {
@@ -106,6 +107,7 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewChecked {
   ngOnInit() {
     if (this.authService.isLoggedIn()) {
       this.notificationService.load();
+      this.notificationService.startPolling();
       this.authService.refreshUser().subscribe({ error: error => console.error('Unable to refresh navigation:', error) });
     }
     // Watch for screen size changes
@@ -154,6 +156,7 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewChecked {
   }
 
   ngOnDestroy() {
+    this.notificationService.stopPolling();
     if (this.breakpointSubscription) {
       this.breakpointSubscription.unsubscribe();
     }
@@ -336,6 +339,8 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewChecked {
 
   logout() {
     this.closeProfileDropdown();
+    this.notificationService.stopPolling();
+    this.notificationService.clear();
     this.authService.logout();
     // Exit fullscreen if active
     if (this.fullscreenService.isFullscreen()) {

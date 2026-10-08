@@ -17,6 +17,11 @@ import { AuthService } from '../../../shared/services/auth.service';
 import { TestService } from '../../../shared/services/test.service';
 import { CreateTestDialogComponent } from '../create-test-dialog/create-test-dialog.component';
 
+export function isTestExpired(test: any, now = Date.now()): boolean {
+  const expiry = new Date(test?.reopenUntil || test?.endTime || '').getTime();
+  return Number.isFinite(expiry) && expiry <= now;
+}
+
 @Component({
   selector: 'app-live-tests',
   standalone: true,
@@ -46,8 +51,32 @@ export class LiveTestsComponent implements OnInit, OnDestroy {
   tests = signal<any[]>([]);
   now = Date.now();
   private clock: ReturnType<typeof setInterval> | null = null;
-  search='';testFilter='all';sortOrder='newest';
-  get filteredTests(){return this.tests().filter(test=>(this.testFilter==='all'||(this.testFilter==='completed'?test.submitted:!test.submitted))&&[test.title,test.description].join(' ').toLowerCase().includes(this.search.toLowerCase())).sort((a,b)=>(+new Date(b.startTime)-+new Date(a.startTime))*(this.sortOrder==='newest'?1:-1));}
+  search = '';
+  statusFilter = 'all';
+  dateFrom = '';
+  dateTo = '';
+  sortOrder = 'newest';
+
+  get filteredTests() {
+    const query = this.search.trim().toLowerCase();
+
+    return this.tests()
+      .filter((test) => {
+        const text = [test.title, test.description, test.titleHi, test.descriptionHi].join(' ').toLowerCase();
+        const matchesSearch = !query || (!isTestExpired(test, this.now) && text.includes(query));
+        const matchesStatus = this.matchesStatusFilter(test);
+        const matchesFrom = !this.dateFrom || new Date(test.startTime).getTime() >= new Date(`${this.dateFrom}T00:00:00`).getTime();
+        const matchesTo = !this.dateTo || new Date(test.startTime).getTime() <= new Date(`${this.dateTo}T23:59:59`).getTime();
+
+        return matchesSearch && matchesStatus && matchesFrom && matchesTo;
+      })
+      .sort((a, b) => {
+        const startA = new Date(a.startTime).getTime();
+        const startB = new Date(b.startTime).getTime();
+        return (this.sortOrder === 'newest' ? startB - startA : startA - startB);
+      });
+  }
+
   get completedTestsCount(){return this.tests().filter(test => test.submitted).length;}
   loading = signal(false);
   pdfDownloading = signal<string | null>(null);
@@ -67,6 +96,36 @@ export class LiveTestsComponent implements OnInit, OnDestroy {
     this.loadTests();
     this.clock = setInterval(() => this.now = Date.now(), 1000);
   }
+
+  clearFilters() {
+    this.search = '';
+    this.statusFilter = 'all';
+    this.dateFrom = '';
+    this.dateTo = '';
+    this.sortOrder = 'newest';
+  }
+
+  matchesStatusFilter(test: any): boolean {
+    const now = Date.now();
+    const start = new Date(test.startTime).getTime();
+    const end = new Date(test.endTime).getTime();
+
+    switch (this.statusFilter) {
+      case 'active':
+        return now >= start && now <= end;
+      case 'upcoming':
+        return now < start;
+      case 'closed':
+        return now > end;
+      case 'submitted':
+        return !!test.submitted;
+      case 'not-started':
+        return !test.submitted;
+      default:
+        return true;
+    }
+  }
+
   ngOnDestroy() { if (this.clock) clearInterval(this.clock); }
   countdown(test: any): string {
     if (!test?.startTime) return '';
@@ -149,6 +208,7 @@ export class LiveTestsComponent implements OnInit, OnDestroy {
   // }
 
   canStartTest(test: any): boolean {
+    if (this.isTestExpired(test)) return false;
     if (test.canTake) return true;
     if (!test.startTime || !test.endTime) return false;
     const now = new Date();
@@ -156,6 +216,10 @@ export class LiveTestsComponent implements OnInit, OnDestroy {
     const endTime = new Date(test.reopenUntil || test.endTime);
     if (test.reopened || test.reopenUntil) return now <= endTime;
     return now >= startTime && now <= endTime;
+  }
+
+  isTestExpired(test: any): boolean {
+    return isTestExpired(test, this.now);
   }
 
   showTestRules(test: any) {

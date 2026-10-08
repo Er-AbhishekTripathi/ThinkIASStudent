@@ -1,13 +1,15 @@
 import { TranslatePipe } from '../../shared/i18n/translate.pipe';
-import { AfterViewChecked, Component, ElementRef, inject, signal, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { AfterViewChecked, Component, computed, ElementRef, inject, signal, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { Router, RouterLink } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../environment/environment';
 import { MatDialog } from '@angular/material/dialog';
 import { AuthService } from '../../shared/services/auth.service';
-import { TestService } from '../../shared/services/test.service';
+import { Test, TestService } from '../../shared/services/test.service';
 import { LiveTest, LiveTestService } from '../../shared/services/live-test.service';
 import { PaymentDialogComponent } from './payment-dialog/payment-dialog.component';
 import { UserService } from '../../shared/services/user.service';
@@ -18,6 +20,13 @@ import { ReviewSliderComponent } from '../homepage/review-slider/review-slider.c
 import { Chart, registerables } from 'chart.js';
 
 Chart.register(...registerables);
+
+export function filterUpcomingTests(tests: Test[], now = Date.now()): Test[] {
+  return tests.filter(test => {
+    const expiryTime = new Date(test.reopenUntil || test.endTime || '').getTime();
+    return !test.submitted && Number.isFinite(expiryTime) && expiryTime > now;
+  });
+}
 
 @Component({
   selector: 'app-dashboard',
@@ -39,12 +48,17 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
   private liveTestService = inject(LiveTestService);
   private userService = inject(UserService);
   private planService = inject(PublicPlanService);
+  private http = inject(HttpClient);
 
   private router = inject(Router);
   private dialog = inject(MatDialog);
 
   currentUser = this.authService.currentUser;
   upcomingTests = signal<any[]>([]);
+  prelimsExams = signal<any[]>([]);
+  mainsExams = signal<any[]>([]);
+  prelimsCompletedCount = computed(() => this.prelimsExams().filter(exam => !!exam.result).length);
+  mainsCompletedCount = computed(() => this.mainsExams().filter(exam => !!exam.result).length);
   liveTests = signal<LiveTest[]>([]);
   liveClock = signal(0);
   recentResults = signal<any[]>([]);
@@ -141,10 +155,11 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
 
   loadPreStudentData() {
     this.loading.set(true);
+    this.loadSeriesExams('pre');
     
     this.testService.getUpcomingTests().subscribe({
       next: (tests) => {
-        this.upcomingTests.set(tests.slice(0, 3));
+        this.upcomingTests.set(filterUpcomingTests(tests));
       },
       error: (error) => {
         console.error('Error loading upcoming tests:', error);
@@ -169,6 +184,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
   }
 
   loadLiveTests() {
+    this.loadSeriesExams('mains');
     this.liveTestService.getAllStudentTests().subscribe({
       next: (response) => {
         const tests = (response.data || []).filter((test) => test.status !== 'expired').slice(0, 3);
@@ -178,6 +194,35 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
         }
       },
       error: (error) => console.error('Error loading live tests:', error)
+    });
+  }
+
+  private loadSeriesExams(kind: 'pre' | 'mains') {
+    const path = kind === 'pre' ? 'prelims-ts' : 'mains-ts';
+    this.http.get<any>(`${environment.apiUrl}/${path}/student/all`).subscribe({
+      next: response => {
+        const exams = (response.data || []).flatMap((series: any) =>
+          (series.testDates || [])
+            .filter((slot: any) => !!slot.exam)
+            .map((slot: any) => ({
+              ...slot,
+              seriesName: series.name,
+              examTitle: slot.exam.title || series.name,
+              startTime: slot.exam.startTime || slot.date,
+              duration: slot.exam.duration || slot.duration
+            }))
+        ).sort((first: any, second: any) => {
+          const firstTime = new Date(first.startTime).getTime();
+          const secondTime = new Date(second.startTime).getTime();
+          const now = Date.now();
+          const firstUpcoming = firstTime >= now;
+          const secondUpcoming = secondTime >= now;
+          if (firstUpcoming !== secondUpcoming) return firstUpcoming ? -1 : 1;
+          return firstUpcoming ? firstTime - secondTime : secondTime - firstTime;
+        });
+        (kind === 'pre' ? this.prelimsExams : this.mainsExams).set(exams);
+      },
+      error: error => console.error(`Error loading ${kind} series exams:`, error)
     });
   }
 

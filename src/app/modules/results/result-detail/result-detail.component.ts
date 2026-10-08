@@ -1,4 +1,4 @@
-import { Component, inject, signal, OnInit, computed, AfterViewInit, OnDestroy } from '@angular/core';
+import { Component, inject, signal, OnInit, computed, AfterViewInit, OnDestroy, SecurityContext } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
@@ -15,11 +15,13 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { FormsModule } from '@angular/forms';
 import { TestService, DetailedResult, Question } from '../../../shared/services/test.service';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
+import { MatMenuModule } from '@angular/material/menu';
 
 // Import Chart.js
 import { Chart, registerables } from 'chart.js';
 import { SafeHtmlPipe } from '../../../shared/pipes/safe-html.pipe';
 import { DemoDetailedResult, DemoTestService } from '../../../shared/services/demo-test.service';
+import { DomSanitizer } from '@angular/platform-browser';
 Chart.register(...registerables);
 
 interface CategoryPerformance {
@@ -60,6 +62,7 @@ interface NormalizedResult {
     _id: string;
     title: string;
     description?: string;
+    introPage?: string | { english?: string; hindi?: string };
     duration: number;
     marksPerQuestion: number;
     negativeMarks: number;
@@ -93,6 +96,7 @@ interface NormalizedResult {
     MatChipsModule,
     MatTooltipModule,
     MatButtonToggleModule,
+    MatMenuModule,
     SafeHtmlPipe
     
   ],
@@ -105,6 +109,7 @@ export class ResultDetailComponent implements OnInit, AfterViewInit, OnDestroy {
   private testService = inject(TestService);
   private demoTestService = inject(DemoTestService);
   private snackBar = inject(MatSnackBar);
+  private sanitizer = inject(DomSanitizer);
   
   result = signal<NormalizedResult | null>(null);
   loading = signal(true);
@@ -298,12 +303,28 @@ export class ResultDetailComponent implements OnInit, AfterViewInit, OnDestroy {
         next: (result: any) => {
           console.log('Demo result loaded:', result);
           this.processDemoResult(result);
-          this.loading.set(false);
-          // Initialize charts after data is loaded
-          setTimeout(() => {
-            this.initializePerformanceChart();
-            // Demo tests might not have category data
-          }, 100);
+          const finishLoading = () => {
+            this.loading.set(false);
+            setTimeout(() => this.initializePerformanceChart(), 100);
+          };
+
+          if (result.test?.introPage) {
+            finishLoading();
+            return;
+          }
+
+          this.demoTestService.getDemoTestById(testId).subscribe({
+            next: (test: any) => {
+              this.result.update(current => current
+                ? { ...current, test: { ...current.test, introPage: test?.introPage || '' } }
+                : current);
+              finishLoading();
+            },
+            error: (error: any) => {
+              console.error('Error loading demo test introduction:', error);
+              finishLoading();
+            }
+          });
         },
         error: (error: any) => {
           console.error('Error loading demo result detail:', error);
@@ -317,12 +338,32 @@ export class ResultDetailComponent implements OnInit, AfterViewInit, OnDestroy {
         next: (result: DetailedResult) => {
           console.log('Regular result loaded:', result);
           this.processRegularResult(result);
-          this.loading.set(false);
-          // Initialize charts after data is loaded
-          setTimeout(() => {
-            this.initializePerformanceChart();
-            this.initializeCategoryChart();
-          }, 100);
+          const finishLoading = () => {
+            this.loading.set(false);
+            setTimeout(() => {
+              this.initializePerformanceChart();
+              this.initializeCategoryChart();
+            }, 100);
+          };
+
+          if (result.test.introPage) {
+            finishLoading();
+            return;
+          }
+
+          this.testService.getUpcomingTests().subscribe({
+            next: tests => {
+              const test = tests.find(item => item._id === result.test._id);
+              this.result.update(current => current
+                ? { ...current, test: { ...current.test, introPage: test?.introPage || '' } }
+                : current);
+              finishLoading();
+            },
+            error: (error: any) => {
+              console.error('Error loading test introduction:', error);
+              finishLoading();
+            }
+          });
         },
         error: (error: any) => {
           console.error('Error loading result detail:', error);
@@ -354,6 +395,7 @@ export class ResultDetailComponent implements OnInit, AfterViewInit, OnDestroy {
         _id: result.test._id,
         title: result.test.title,
         description: result.test.description,
+        introPage: result.test.introPage,
         duration: result.test.duration,
         marksPerQuestion: result.test.marksPerQuestion,
         negativeMarks: result.test.negativeMarks,
@@ -418,6 +460,7 @@ export class ResultDetailComponent implements OnInit, AfterViewInit, OnDestroy {
         _id: result.test._id,
         title: result.test.title,
         description: result.test.description,
+        introPage: result.test.introPage,
         duration: result.test.duration,
         marksPerQuestion: result.test.marksPerQuestion,
         negativeMarks: result.test.negativeMarks,
@@ -942,24 +985,109 @@ export class ResultDetailComponent implements OnInit, AfterViewInit, OnDestroy {
     this.router.navigate([isDemoTest ? '/demo-tests' : '/prelims-results']);
   }
 
-  downloadQuestionPaper() {
+  downloadQuestionPaper(language: 'english' | 'hindi') {
     const res = this.result();
     if (!res?.test?.questions?.length) {
       this.snackBar.open('Question paper is not available yet', 'Close', { duration: 3000 });
       return;
     }
     const printWindow = window.open('', '_blank', 'width=900,height=700');
-    if (!printWindow) return;
-    const body = res.test.questions.map((question: any, index: number) => {
-      const options = (question.options || []).map((option: any, optionIndex: number) =>
-        `<li>${this.getOptionLetter(optionIndex)}. ${this.getOptionText(option)}</li>`
-      ).join('');
-      return `<article><h3>Q${index + 1}.</h3><div>${this.getQuestionText(question)}</div><ol>${options}</ol></article>`;
+    if (!printWindow) {
+      this.snackBar.open('Please allow pop-ups to save the question paper as a PDF', 'Close', { duration: 4000 });
+      return;
+    }
+
+    const isHindi = language === 'hindi';
+    const languageName = isHindi ? 'Hindi' : 'English';
+    const selectedLanguage = isHindi ? 'hindi' : 'english';
+    const title = res.test.title || 'Question Paper';
+    const sanitizeHtml = (value: unknown): string => {
+      if (typeof value !== 'string') return '';
+      return this.sanitizer.sanitize(SecurityContext.HTML, value) || '';
+    };
+    const questionHtml = res.test.questions.map((question: any, index: number) => {
+      const text = sanitizeHtml(question.question?.[selectedLanguage] ?? question.question);
+      const options = (question.options || []).map((option: any, optionIndex: number) => {
+        const optionText = sanitizeHtml(option?.[selectedLanguage] ?? option);
+        return `<div class="opt"><b>${String.fromCharCode(65 + optionIndex)}.</b><span>${optionText}</span></div>`;
+      }).join('');
+      return `<article class="q"><b class="no">${index + 1}.</b><div class="body">${text}<div class="options">${options}</div></div></article>`;
     }).join('');
-    printWindow.document.write(`<!doctype html><html><head><title>${res.test.title} - Question Paper</title><style>body{font-family:Segoe UI,sans-serif;padding:24px;color:#102a43}article{margin:0 0 22px;page-break-inside:avoid}ol{padding-left:20px}</style></head><body><h1>${res.test.title}</h1>${body}</body></html>`);
+    const rawIntroduction = res.test.introPage;
+    const languageIntroduction = typeof rawIntroduction === 'string'
+      ? (isHindi ? rawIntroduction : '')
+      : rawIntroduction?.[selectedLanguage] || '';
+    const introduction = sanitizeHtml(languageIntroduction);
+    const safeTitle = title.replace(/[<>:"/\\|?*\u0000-\u001F]/g, '-').trim() || 'Question-Paper';
+    const escapedTitle = safeTitle.replace(/[&<>"']/g, character => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#39;'
+    })[character] || character);
+    const html = `<!doctype html>
+<html lang="${isHindi ? 'hi' : 'en'}">
+<head>
+  <meta charset="utf-8">
+  <title>${escapedTitle}-${languageName}-Question-Paper</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+Devanagari:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    @page { size: A4; margin: 12mm; }
+    body { margin: 0; color: #111; font-family: ${isHindi ? "'Noto Serif Devanagari', serif" : "'Times New Roman', serif"}; }
+    .page { box-sizing: border-box; min-height: 270mm; padding: 6mm 8mm; font-size: 13px; line-height: 1.5; }
+    .intro-page { box-sizing: border-box; width: 100%; height: 273mm; min-height: 273mm; max-height: 273mm; overflow: hidden; padding: 0; break-after: page; page-break-after: always; }
+    .intro-viewport { width: 100%; height: 100%; overflow: hidden; }
+    .intro-content { width: 100%; font-size: 12px; line-height: 1.25; overflow-wrap: anywhere; }
+    .intro-content p { margin: 0 0 4px; }
+    .intro-content img { max-width: 100%; max-height: 245mm; object-fit: contain; }
+    .intro-content table { max-width: 100%; }
+    .questions { margin-top: 18px; column-count: 2; column-gap: 28px; column-rule: 1px solid #111; }
+    .q { display: flex; break-inside: avoid; margin: 0 0 14px; text-align: justify; }
+    .no { min-width: 30px; }
+    .body { flex: 1; min-width: 0; }
+    .opt { display: flex; gap: 8px; margin: 4px 0; }
+    .opt>b { min-width: 22px; }
+    @media print { .page { padding: 0; } }
+  </style>
+</head>
+<body>
+  <main class="intro-page">
+    <div class="intro-viewport">
+      <section id="intro-content" class="intro-content">${introduction || '&nbsp;'}</section>
+    </div>
+  </main>
+  <main class="page">
+    <section class="questions">${questionHtml}</section>
+  </main>
+</body>
+</html>`;
+
+    printWindow.document.open();
+    printWindow.document.write(html);
     printWindow.document.close();
-    printWindow.focus();
-    printWindow.print();
+    void printWindow.document.fonts.ready.then(() => {
+      const content = printWindow.document.getElementById('intro-content');
+      const viewport = printWindow.document.querySelector('.intro-viewport');
+      if (content && viewport) {
+        let fontSize = 12;
+        while (content.scrollHeight > viewport.clientHeight && fontSize > 7) {
+          fontSize -= 0.5;
+          content.style.fontSize = `${fontSize}px`;
+        }
+
+        if (content.scrollHeight > viewport.clientHeight) {
+          const scale = viewport.clientHeight / content.scrollHeight;
+          content.style.width = `${100 / scale}%`;
+          content.style.transform = `scale(${scale})`;
+          content.style.transformOrigin = 'top left';
+        }
+      }
+      printWindow.focus();
+      printWindow.print();
+    });
   }
 
   // Get questions by category

@@ -31,10 +31,12 @@
 
 .test-filters { display: flex; align-items: flex-end; gap: 16px; flex-wrap: wrap; margin-bottom: 26px; padding: 18px 20px; border: 1px solid #dce9e4; border-radius: 16px; background: #fff; box-shadow: 0 8px 22px rgba(19, 59, 59, .05); }
 .test-filters label { display: flex; flex-direction: column; gap: 7px; color: #42605d; font-size: 11px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; }
-.test-filters input, .test-filters select { min-width: 180px; padding: 11px 12px; border: 1px solid #d6e3df; border-radius: 9px; outline: none; background: #fbfdfc; color: #173b3b; font: inherit; }
+.test-filters input, .test-filters select { min-width: 170px; padding: 11px 12px; border: 1px solid #d6e3df; border-radius: 9px; outline: none; background: #fbfdfc; color: #173b3b; font: inherit; }
 .test-filters input:focus, .test-filters select:focus { border-color: #268779; box-shadow: 0 0 0 3px rgba(38, 135, 121, .12); }
-.input-wrap { position: relative; }
-.input-wrap input { padding-left: 12px; }
+.input-wrap { position: relative; min-width: 220px; }
+.input-wrap input { padding-left: 12px; width: 100%; }
+.clear-filters-btn { border: 1px solid #d6e3df; background: #f7faf9; color: #173b3b; border-radius: 9px; padding: 11px 14px; font-weight: 700; cursor: pointer; transition: all 0.2s ease; }
+.clear-filters-btn:hover { background: #edf7f3; border-color: #9ad1c4; }
 .test-filters strong { margin-left: auto; padding-bottom: 11px; color: #197c6b; }
 .tests-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; }
 .test-card { position: relative; overflow: hidden; border: 1px solid #dce9e4; border-radius: 18px; box-shadow: 0 8px 24px rgba(19, 59, 59, .06); transition: transform .25s ease, border-color .25s ease, box-shadow .25s ease; }
@@ -78,7 +80,7 @@
 }
 .student-actions .start-test-button[disabled] mat-icon { color: #71817d !important; }
 .available { color: #198754; font-weight: 800; }
-.ended { color: #b45309; font-weight: 800; }
+.ended { color: #dc2626; font-weight: 800; }
 .availability-row { display: flex; align-items: center; gap: 6px; margin-top: 9px; font-weight: 800; }
 .availability-row mat-icon { width: 19px; height: 19px; font-size: 19px; }
 .no-tests mat-card { padding: 38px; border: 1px solid #e0e8ee; border-radius: 16px; text-align: center; }

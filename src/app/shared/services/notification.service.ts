@@ -10,7 +10,19 @@ export interface StudentNotification { titleHindi?: string; bodyHindi?: string; 
 export class NotificationService {
   readonly notifications = signal<StudentNotification[]>([]);
   readonly unread = signal(0);
+  private refreshTimer?: ReturnType<typeof setInterval>;
   constructor(private readonly http: HttpClient) {}
+  startPolling() {
+    if (!this.refreshTimer) this.refreshTimer = setInterval(() => this.load(), 15000);
+  }
+  stopPolling() {
+    if (this.refreshTimer) clearInterval(this.refreshTimer);
+    this.refreshTimer = undefined;
+  }
+  clear() {
+    this.notifications.set([]);
+    this.unread.set(0);
+  }
   load() {
     this.http.get<{ data: StudentNotification[] }>(`${environment.apiUrl}/notifications`).subscribe({ next: ({ data }) => {
       this.notifications.set(data); this.unread.set(data.filter(item => !item.isRead).length);

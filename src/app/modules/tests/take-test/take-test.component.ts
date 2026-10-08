@@ -272,26 +272,39 @@ export class TakeTestComponent implements OnInit, OnDestroy, AfterViewInit {
 
   loadSavedProgress(testId: string) {
     const savedData = this.autoSaveService.loadProgress(testId);
-    if (savedData) {
-      // Load answers
-      savedData.answers.forEach((answer: number, index: number) => {
-        if (answer !== null && answer !== undefined) {
-          this.answers.at(index).setValue(answer);
+    if (savedData && typeof savedData === 'object' && Array.isArray(savedData.answers)) {
+      let skippedAnswers = false;
+
+      savedData.answers.forEach((answer: unknown, index: number) => {
+        if (index >= this.answers.length) {
+          skippedAnswers = true;
+          return;
+        }
+        if (answer === null || answer === undefined) return;
+        if (Number.isInteger(answer) && Number(answer) >= 0 && Number(answer) <= 3) {
+          this.answers.at(index).setValue(Number(answer));
+        } else {
+          skippedAnswers = true;
         }
       });
       
       // Load review questions
-      if (savedData.reviewQuestions) {
-        this.reviewQuestions.set(savedData.reviewQuestions);
+      if (Array.isArray(savedData.reviewQuestions)) {
+        this.reviewQuestions.set(savedData.reviewQuestions.filter(
+          (index: unknown) => Number.isInteger(index) && Number(index) >= 0 && Number(index) < this.answers.length
+        ));
       }
       
       // Load current question index
-      if (savedData.currentQuestionIndex !== undefined) {
-        this.currentQuestionIndex.set(savedData.currentQuestionIndex);
+      if (Number.isInteger(savedData.currentQuestionIndex)) {
+        this.currentQuestionIndex.set(Math.min(
+          Math.max(savedData.currentQuestionIndex, 0),
+          Math.max(this.answers.length - 1, 0)
+        ));
       }
       
       // Calculate time left based on saved start time
-      if (savedData.startTime) {
+      if (Number.isFinite(savedData.startTime) && savedData.startTime > 0) {
         const elapsedSeconds = Math.floor((Date.now() - savedData.startTime) / 1000);
         const timeSpent = Math.min(elapsedSeconds, this.testDuration);
         const calculatedTimeLeft = Math.max(0, this.testDuration - timeSpent);
@@ -315,7 +328,18 @@ export class TakeTestComponent implements OnInit, OnDestroy, AfterViewInit {
       }
       
       this.snackBar.open('Previous progress restored', 'OK', { duration: 3000 });
+      if (skippedAnswers) {
+        this.snackBar.open(
+          'Some saved answers could not be restored because the test questions changed.',
+          'OK',
+          { duration: 5000 }
+        );
+      }
     } else {
+      if (savedData) {
+        console.warn('Discarding saved progress with an invalid answer list for test:', testId);
+        this.autoSaveService.clearProgress(testId);
+      }
       // No saved data, start fresh
       this.timeLeft.set(this.testDuration);
       this.startTime = new Date();
