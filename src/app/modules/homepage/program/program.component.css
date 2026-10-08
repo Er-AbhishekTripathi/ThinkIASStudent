@@ -227,6 +227,19 @@
   margin: 0 0 20px 0;
 }
 
+.no-results .btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.no-results .btn-primary i {
+  margin: 0;
+  color: inherit;
+  font-size: 18px;
+  line-height: 1;
+}
+
 /* Programs Grid */
 .programs-grid-section {
   padding: 0 0 40px;

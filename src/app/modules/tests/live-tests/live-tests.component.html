@@ -84,7 +84,7 @@
         </mat-card-subtitle>
       </mat-card-header>
       <mat-card-content>
-        <p class="description">{{ test.description || 'Focused practice set for your prelims preparation.' }}</p>
+        <div class="description" [innerHTML]="test.description || 'Focused practice set for your prelims preparation.'"></div>
         <div class="test-meta">
           <span><mat-icon>quiz</mat-icon><b>{{ test.questionUids?.length || test.totalQuestions }}</b> Questions</span>
           <span><mat-icon>emoji_events</mat-icon><b>{{ (test.marksPerQuestion * test.questionUids?.length) || (test.marksPerQuestion * test.totalQuestions)}}</b> Marks</span>

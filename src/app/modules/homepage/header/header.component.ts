@@ -60,7 +60,13 @@ export class HeaderComponent implements OnInit, AfterViewInit, OnDestroy {
   programGroups = [
     {label:'Test Series',hi:'टेस्ट सीरीज',categories:['Test Series','Optional Test Series']}
   ];
-  groupPrograms(group:any){return this.programs.filter(p=>group.categories.includes(p.programCategory));}
+  groupPrograms(group: any) {
+    return this.programs.filter(program =>
+      Array.isArray(group.categories)
+        ? group.categories.includes(program.programCategory)
+        : group.examination === program.examination
+    );
+  }
   programDisplayName(program: any): string {
     if (this.currentLanguage !== 'hi') return program.programName;
     return program.programNameHindi?.trim() || this.languageService.text(program.programName);
