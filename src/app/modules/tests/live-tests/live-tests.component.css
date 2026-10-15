@@ -362,3 +362,28 @@
 
 
 .test-filters{display:flex;gap:12px;flex-wrap:wrap;margin:20px 0}.test-filters input,.test-filters select{padding:12px;border:1px solid #dce1ed;border-radius:8px}.test-filters input{flex:1}.test-card{border-radius:14px;border:1px solid #dce1ed;box-shadow:0 4px 18px #12345610}
+.introduction-language-toggle {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.introduction-language-toggle button {
+  padding: 5px 10px;
+  border: 1px solid #d5dee8;
+  border-radius: 6px;
+  background: #fff;
+  color: #1c365e;
+  cursor: pointer;
+}
+
+.introduction-language-toggle button.active {
+  border-color: #1c365e;
+  background: #1c365e;
+  color: #fff;
+}
+
+.introduction-copy ::ng-deep *,
+.intro-page-scrollable ::ng-deep * {
+  font-size: inherit !important;
+}

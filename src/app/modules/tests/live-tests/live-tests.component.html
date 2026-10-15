@@ -167,6 +167,12 @@
         <div>
           <span class="modal-eyebrow">TEST INFORMATION</span>
           <h2 id="introduction-title">{{ introductionTest?.title }}</h2>
+          <div class="introduction-language-toggle">
+            <button type="button" [class.active]="rulesLanguage === 'english'"
+              (click)="rulesLanguage = 'english'">English</button>
+            <button type="button" [class.active]="rulesLanguage === 'hindi'"
+              (click)="rulesLanguage = 'hindi'">हिन्दी</button>
+          </div>
         </div>
       </div>
       <button mat-icon-button aria-label="Close introduction" (click)="closeIntroduction()">
@@ -174,8 +180,9 @@
       </button>
     </header>
     <div class="introduction-modal-content">
-      <div *ngIf="introductionTest?.introPage; else noIntroduction" class="introduction-copy"
-        [innerHTML]="introductionTest?.introPage"></div>
+      <div *ngIf="getIntroContent(introductionTest); else noIntroduction" class="introduction-copy"
+        [style.fontSize.px]="introductionTest?.introFontSize || 18"
+        [innerHTML]="getIntroContent(introductionTest)"></div>
       <ng-template #noIntroduction>
         <div class="empty-introduction">
           <mat-icon>description</mat-icon>
@@ -213,6 +220,12 @@
       <!-- Intro Page Mode Header -->
       <div *ngIf="showIntroPage">
         <h2>{{ selectedTest?.title }}</h2>
+        <div class="introduction-language-toggle">
+          <button type="button" [class.active]="rulesLanguage === 'english'"
+            (click)="rulesLanguage = 'english'">English</button>
+          <button type="button" [class.active]="rulesLanguage === 'hindi'"
+            (click)="rulesLanguage = 'hindi'">हिन्दी</button>
+        </div>
         <div class="test-info">
           <!-- <div><strong>Duration:</strong> {{ selectedTest?.duration }} minutes</div>
           <div><strong>Total Questions:</strong> {{ selectedTest?.totalQuestions }}</div>
@@ -321,7 +334,8 @@
 
       <!-- Intro Page Content -->
       <div *ngIf="showIntroPage" class="intro-page-content">
-        <div class="intro-page-scrollable" [innerHTML]="selectedTest?.introPage || 'No instructions available.'"></div>
+        <div class="intro-page-scrollable" [style.fontSize.px]="selectedTest?.introFontSize || 18"
+          [innerHTML]="getIntroContent(selectedTest) || 'No instructions available.'"></div>
       </div>
     </div>
 
@@ -351,16 +365,16 @@
       <div *ngIf="showIntroPage" class="intro-mode-footer">
         <div class="agree-checkbox">
           <mat-checkbox [(ngModel)]="agreeToIntro" color="primary">
-            <span>I have read and understood all the instructions</span>
+            <span>{{ rulesLanguage === 'hindi' ? 'मैंने सभी निर्देश पढ़ और समझ लिए हैं' : 'I have read and understood all the instructions' }}</span>
           </mat-checkbox>
         </div>
 
         <div class="rules-modal-actions">
           <button mat-button (click)="backToRules()">
-            Back
+            {{ rulesLanguage === 'hindi' ? 'वापस' : 'Back' }}
           </button>
           <button mat-raised-button color="primary" (click)="proceedToTest()" [disabled]="!agreeToIntro">
-            Start Test
+            {{ rulesLanguage === 'hindi' ? 'परीक्षा शुरू करें' : 'Start Test' }}
           </button>
         </div>
       </div>
