@@ -40,6 +40,7 @@ export class ProgramComponent implements OnInit {
   stages: string[] = ['All'];
   years: string[] = [];
   plans: any[] = [];
+  examCards: any[] = [];
   
   // Filter selections: examination, then program, then plan, then year
   selectedExamination: string = 'All';
@@ -65,7 +66,8 @@ export class ProgramComponent implements OnInit {
     });
     this.http.get<any>(`${environment.apiUrl}/exams`).subscribe({
       next: (response) => {
-        const names = (response?.data || []).map((exam: any) => exam.name).filter(Boolean);
+        this.examCards = response?.data || [];
+        const names = this.examCards.map((exam: any) => exam.name).filter(Boolean);
         this.examinations = ['All', ...names];
       }
     });
@@ -256,8 +258,14 @@ export class ProgramComponent implements OnInit {
   }
 
   // Navigate to program details/batches page
+  openExam(exam: any): void {
+    this.router.navigate(['/programs', exam._id || exam.code]);
+  }
+
   viewProgramBatches(program: Program): void {
-    this.router.navigate(['/program', program._id]);
+    const examId = typeof (program as any).examId === 'object' ? (program as any).examId?._id : (program as any).examId;
+    if (examId && program._id) this.router.navigate(['/programs', examId, program._id]);
+    else this.router.navigate(['/program', program._id]);
   }
 
   // Handle enroll button click

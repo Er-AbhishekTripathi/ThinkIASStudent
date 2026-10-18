@@ -67,20 +67,58 @@
                 <!-- Desktop Menu -->
                 <div class="desktop_menu d-none d-lg-block">
                     <ul class="menu d-flex align-items-center">
-                        <li (click)="scrollToSection('about')"><a href="javascript:void(0)" class="en">About</a><a
-                                href="javascript:void(0)" class="hi">हमारे बारे में</a>
+                        <li class="dropdown position-relative">
+                            <a class="dropdown-toggle en" href="#" (click)="$event.preventDefault()" data-bs-toggle="dropdown">About</a>
+                            <a class="dropdown-toggle hi" href="#" (click)="$event.preventDefault()" data-bs-toggle="dropdown">हमारे बारे में</a>
+                            <div class="dropdown-menu">
+                                <a class="dropdown-item" (click)="scrollToSection('about')">{{ currentLanguage==='hi' ? 'हमारे बारे में' : 'About Us' }}</a>
+                                <a class="dropdown-item" (click)="scrollToSection('guidence')">{{ currentLanguage==='hi' ? 'हमारा उद्देश्य' : 'Our Mission' }}</a>
+                                <a class="dropdown-item" (click)="scrollToSection('about')">{{ currentLanguage==='hi' ? 'संकाय एवं मेंटर' : 'Faculty & Mentors' }}</a>
+                            </div>
                         </li>
 
                         <li (click)="scrollToSection('guidence')"><a href="javascript:void(0)" class="en">Objective</a><a
                             href="javascript:void(0)" class="hi">उद्देश्य</a></li>
 
-                        <li (click)="scrollToSection('materials')"><a href="javascript:void(0)"
-                            class="en">Syllabus</a><a href="javascript:void(0)" class="hi">पाठ्यक्रम</a></li>
+                        <li class="dropdown position-relative">
+                            <a class="dropdown-toggle en" href="#" (click)="$event.preventDefault()" data-bs-toggle="dropdown">Syllabus</a>
+                            <a class="dropdown-toggle hi" href="#" (click)="$event.preventDefault()" data-bs-toggle="dropdown">पाठ्यक्रम</a>
+                            <div class="dropdown-menu">
+                                <a class="dropdown-item" (click)="openSyllabus('prelims')">{{ currentLanguage==='hi' ? 'प्रीलिम्स पाठ्यक्रम' : 'Prelims Syllabus' }}</a>
+                                <a class="dropdown-item" (click)="openSyllabus('mains')">{{ currentLanguage==='hi' ? 'मेन्स पाठ्यक्रम' : 'Mains Syllabus' }}</a>
+                                <a class="dropdown-item" (click)="scrollToSection('materials')">{{ currentLanguage==='hi' ? 'वैकल्पिक विषय' : 'Optional Subjects' }}</a>
+                            </div>
+                        </li>
 
-                        <li><a routerLink="/programs" class="en">Exam Journey</a><a routerLink="/programs" class="hi">परीक्षा यात्रा</a></li>
+                        <li class="dropdown position-relative exam-journey-item">
+                            <a class="dropdown-toggle en" href="#" (click)="$event.preventDefault()" data-bs-toggle="dropdown">Exam Journey</a>
+                            <a class="dropdown-toggle hi" href="#" (click)="$event.preventDefault()" data-bs-toggle="dropdown">परीक्षा यात्रा</a>
+                            <div class="dropdown-menu exam-mega">
+                                <div class="mega-flow">
+                                    <span>Examination</span><span>→</span><span>Program</span><span>→</span><span>Plan</span><span>→</span><span>Batch</span><span>→</span><span>Payment</span>
+                                </div>
+                                <div class="exam-tabs">
+                                    <button type="button" *ngFor="let exam of exams" class="exam-tab" [class.active]="selectedMegaExam?._id === exam._id" (click)="selectMegaExam(exam, $event)">{{ currentLanguage==='hi' ? (exam.nameHindi || exam.name) : exam.name }}</button>
+                                </div>
+                                <div class="mega-cols">
+                                    <div class="mega-col" *ngFor="let stage of stages">
+                                        <h4>{{ stage.name }}</h4>
+                                        <a class="dropdown-item" *ngFor="let program of megaPrograms(stage.name)" [routerLink]="['/programs', selectedMegaExam?._id, program._id]">{{ programDisplayName(program) }}</a>
+                                        <span class="sub-note" *ngIf="!megaPrograms(stage.name).length">{{ currentLanguage==='hi' ? 'अभी कोई प्लान नहीं' : 'No plans yet' }}</span>
+                                    </div>
+                                </div>
+                                <a class="dropdown-item mega-footer-link" routerLink="/programs">{{ currentLanguage==='hi' ? 'सभी परीक्षाएँ देखें' : 'Browse All Exams' }}</a>
+                            </div>
+                        </li>
 
-                        <!-- Mentorship Program Dropdown -->
-                        <li class="dropdown position-relative" *ngFor="let group of programGroups"><a class="dropdown-toggle" href="#" (click)="$event.preventDefault()" data-bs-toggle="dropdown">{{currentLanguage==='hi'?group.hi:group.label}}</a><div class="dropdown-menu"><a class="dropdown-item" *ngFor="let program of groupPrograms(group)" [routerLink]="['/program',program._id]">{{programDisplayName(program)}}</a></div></li>
+                        <li class="dropdown position-relative">
+                            <a class="dropdown-toggle en" href="#" (click)="$event.preventDefault()" data-bs-toggle="dropdown">Test Series</a>
+                            <a class="dropdown-toggle hi" href="#" (click)="$event.preventDefault()" data-bs-toggle="dropdown">टेस्ट सीरीज</a>
+                            <div class="dropdown-menu">
+                                <a class="dropdown-item" *ngFor="let program of testSeriesPrograms()" [routerLink]="['/programs', selectedMegaExam?._id || idOf(program.examId), program._id]">{{ programDisplayName(program) }}</a>
+                                <a class="dropdown-item" *ngIf="!testSeriesPrograms().length" routerLink="/programs">{{ currentLanguage==='hi' ? 'टेस्ट सीरीज देखें' : 'Browse Test Series' }}</a>
+                            </div>
+                        </li>
 
                         <li class="dropdown position-relative">
                             <a href="javascript:void(0)" class="en dropdown-toggle" data-bs-toggle="dropdown">
@@ -151,9 +189,13 @@
             <a class="d-block py-2 hi" [class.hide]="currentLanguage !== 'hi'">उद्देश्य</a>
         </li>
 
-        <li (click)="scrollToSection('materials'); closeMobileMenu()">
-            <a class="d-block py-2 en" [class.hide]="currentLanguage !== 'en'">Syllabus</a>
-            <a class="d-block py-2 hi" [class.hide]="currentLanguage !== 'hi'">पाठ्यक्रम</a>
+        <li class="mobile-dropdown">
+            <a class="d-block py-2 en" [class.hide]="currentLanguage !== 'en'" (click)="toggleMobileDropdown('syllabus')">Syllabus</a>
+            <a class="d-block py-2 hi" [class.hide]="currentLanguage !== 'hi'" (click)="toggleMobileDropdown('syllabus')">पाठ्यक्रम</a>
+            <div class="mobile-dropdown-content" [class.show]="activeMobileDropdown === 'syllabus'">
+                <a class="d-block py-2 ps-4" (click)="openSyllabus('prelims'); closeMobileMenu()">{{ currentLanguage==='hi' ? 'प्रीलिम्स पाठ्यक्रम' : 'Prelims Syllabus' }}</a>
+                <a class="d-block py-2 ps-4" (click)="openSyllabus('mains'); closeMobileMenu()">{{ currentLanguage==='hi' ? 'मेन्स पाठ्यक्रम' : 'Mains Syllabus' }}</a>
+            </div>
         </li>
 
         <li>
@@ -161,12 +203,9 @@
             <a routerLink="/programs" (click)="closeMobileMenu()" class="d-block py-2 hi" [class.hide]="currentLanguage !== 'hi'">परीक्षा यात्रा</a>
         </li>
 
-        <!-- Mentorship Program Mobile -->
-        <li *ngFor="let group of programGroups"><details><summary>{{currentLanguage==='hi'?group.hi:group.label}}</summary><a class="d-block py-2" *ngFor="let program of groupPrograms(group)" [routerLink]="['/program',program._id]" (click)="closeMobileMenu()">{{programDisplayName(program)}}</a></details></li>
-
-        <li (click)="scrollToSection('materials'); closeMobileMenu()">
-            <a class="d-block py-2 en" [class.hide]="currentLanguage !== 'en'">Syllabus</a>
-            <a class="d-block py-2 hi" [class.hide]="currentLanguage !== 'hi'">पाठ्यक्रम</a>
+        <li>
+            <a routerLink="/programs" (click)="closeMobileMenu()" class="d-block py-2 en" [class.hide]="currentLanguage !== 'en'">Test Series</a>
+            <a routerLink="/programs" (click)="closeMobileMenu()" class="d-block py-2 hi" [class.hide]="currentLanguage !== 'hi'">टेस्ट सीरीज</a>
         </li>
 
         <!-- Free Resources Mobile with Dropdown -->

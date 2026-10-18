@@ -126,11 +126,26 @@
               <mat-icon class="expand-icon">{{ isMenuExpanded(item.name) ? 'expand_less' : 'expand_more' }}</mat-icon>
             </button>
             <div *ngIf="item.children?.length && isMenuExpanded(item.name)" class="submenu">
-              <a *ngFor="let child of item.children" [routerLink]="child.path"
-                routerLinkActive="active-link" class="nav-item submenu-item" (click)="closeSidenavOnMobile()">
-                <mat-icon class="nav-icon">{{ getMenuIcon(child) }}</mat-icon>
-                <span class="nav-text">{{ child.name | t }}</span>
-              </a>
+              <ng-container *ngFor="let child of item.children">
+                <a *ngIf="!child.children?.length" [routerLink]="child.path"
+                  routerLinkActive="active-link" class="nav-item submenu-item" (click)="closeSidenavOnMobile()">
+                  <mat-icon class="nav-icon">{{ getMenuIcon(child) }}</mat-icon>
+                  <span class="nav-text">{{ child.name | t }}</span>
+                </a>
+                <button *ngIf="child.children?.length" type="button" class="nav-item nav-parent submenu-item"
+                  [class.active-parent]="isMenuExpanded(child.name)" (click)="toggleMenu(child.name)">
+                  <mat-icon class="nav-icon">{{ getMenuIcon(child) }}</mat-icon>
+                  <span class="nav-text">{{ child.name | t }}</span>
+                  <mat-icon class="expand-icon">{{ isMenuExpanded(child.name) ? 'expand_less' : 'expand_more' }}</mat-icon>
+                </button>
+                <div *ngIf="child.children?.length && isMenuExpanded(child.name)" class="nested-submenu">
+                  <a *ngFor="let leaf of child.children" [routerLink]="leaf.path"
+                    routerLinkActive="active-link" class="nav-item submenu-item nested-item" (click)="closeSidenavOnMobile()">
+                    <mat-icon class="nav-icon">{{ getMenuIcon(leaf) }}</mat-icon>
+                    <span class="nav-text">{{ leaf.name | t }}</span>
+                  </a>
+                </div>
+              </ng-container>
             </div>
           </ng-container>
         </mat-nav-list>

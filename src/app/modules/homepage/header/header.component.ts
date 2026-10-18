@@ -57,10 +57,13 @@ export class HeaderComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private http = inject(HttpClient);
   programs: any[] = [];
-  programGroups = [
-    {label:'Test Series',hi:'टेस्ट सीरीज',categories:['Test Series','Optional Test Series']}
-  ];
-  groupPrograms(group:any){return this.programs.filter(p=>group.categories.includes(p.programCategory));}
+  exams: any[] = [];
+  stages: any[] = [];
+  selectedMegaExam: any = null;
+  programGroups: Array<{label:string;hi:string;examination:string}> = [];
+  groupPrograms(group: any) {
+    return this.programs.filter(program => this.matchExam(program, { name: group.examination, _id: group.examination }));
+  }
   programDisplayName(program: any): string {
     if (this.currentLanguage !== 'hi') return program.programName;
     return program.programNameHindi?.trim() || this.languageService.text(program.programName);
@@ -116,16 +119,64 @@ export class HeaderComponent implements OnInit, AfterViewInit, OnDestroy {
     this.checkMobileView();
   }
 
+  loggedIn(): boolean {
+    return !!this.authService.getToken();
+  }
+
+  idOf(value: any): string {
+    if (!value) return '';
+    return typeof value === 'string' ? value : (value._id || '');
+  }
+
+  matchExam(program: any, exam: any): boolean {
+    if (!exam) return false;
+    const mapped = this.idOf(program?.examId);
+    return mapped === this.idOf(exam) || program?.examination === exam.name || program?.examination === exam.code;
+  }
+
+  megaPrograms(stageName: string): any[] {
+    if (!this.selectedMegaExam) return [];
+    return this.programs.filter((program) => this.matchExam(program, this.selectedMegaExam) && program.programStage === stageName);
+  }
+
+  testSeriesPrograms(): any[] {
+    const exam = this.selectedMegaExam;
+    return this.programs.filter((program) => (!exam || this.matchExam(program, exam)) && /test series/i.test(program.programCategory || ''));
+  }
+
+  selectMegaExam(exam: any, event?: Event): void {
+    event?.preventDefault();
+    event?.stopPropagation();
+    this.selectedMegaExam = exam;
+  }
+
+  openSyllabus(type: string): void {
+    this.dialog.open(ResourcesViewComponent, {
+      data: { type },
+      width: 'calc(100vw - 40px)',
+      height: 'calc(100vh - 40px)',
+      maxWidth: '1200px',
+      maxHeight: '600px',
+      panelClass: 'resources-dialog-container'
+    });
+  }
+
   private loadCatalog(): void {
     this.http.get<any>(environment.apiUrl + '/exams').subscribe({
       next: (response) => {
-        this.programGroups = (response?.data || []).map((exam: any) => ({
+        this.exams = response?.data || [];
+        this.selectedMegaExam = this.exams[0] || null;
+        this.programGroups = this.exams.map((exam: any) => ({
           label: exam.name,
           hi: exam.nameHindi || exam.name,
           examination: exam.name
         }));
       },
-      error: () => { this.programGroups = []; }
+      error: () => { this.exams = []; this.programGroups = []; }
+    });
+    this.http.get<any>(environment.apiUrl + '/program-stages').subscribe({
+      next: (response) => { this.stages = response?.data || []; },
+      error: () => { this.stages = []; }
     });
     this.http.get<any>(environment.apiUrl + '/programs?activeOnly=true').subscribe({
       next: (response) => { this.programs = response.data || []; },

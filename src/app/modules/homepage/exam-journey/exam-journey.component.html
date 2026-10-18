@@ -1,0 +1,113 @@
+<main class="journey">
+  <p class="journey-error" *ngIf="error">{{ error }}</p>
+  <div class="journey-state" *ngIf="loading">Loading exams and programs...</div>
+
+  <ng-container *ngIf="!loading && view === 'home'">
+    <div class="plan-hero">
+      <span class="tag">Examination → Program → Plan → Batch → Payment</span>
+      <h1>Choose your Examination</h1>
+      <p class="lead">Every exam below follows the same Program → Plan structure. Pick one to see its Prelims, Mains, Interview and Integrated programs.</p>
+    </div>
+    <div class="exam-pick-grid">
+      <article class="exam-pick-card" *ngFor="let item of exams">
+        <div class="exam-badge">{{ (item.code || item.name).slice(0,4) | uppercase }}</div>
+        <h3>{{ item.name }}</h3>
+        <p>Prelims, Mains, Interview and Integrated programs for {{ item.name }}.</p>
+        <button type="button" class="btn-solid" (click)="openExam(item)">Explore {{ item.name }}</button>
+      </article>
+    </div>
+  </ng-container>
+
+  <ng-container *ngIf="!loading && view === 'exam' && exam">
+    <div class="breadcrumb">
+      <a routerLink="/programs">ThinkCivil IAS</a><span class="sep">/</span><span>{{ exam.name }}</span>
+    </div>
+    <div class="plan-hero">
+      <span class="tag">Examination: {{ exam.name }}</span>
+      <h1>{{ exam.name }} Programs</h1>
+      <p class="lead">Prelims plans sit under Prelims, Mains plans sit under Mains — pick a program below, then a year, batch and payment.</p>
+    </div>
+    <section class="program-group" *ngFor="let stage of stages">
+      <h2>{{ stage.name }}</h2>
+      <div class="program-grid" *ngIf="programsForStage(stage.name).length; else emptyStage">
+        <article class="plan-card" *ngFor="let program of programsForStage(stage.name)">
+          <h3>{{ program.programName }}</h3>
+          <p>{{ program.programCategory }} · {{ program.year }}</p>
+          <button type="button" class="btn-solid" (click)="openPlan(program)">Open Page</button>
+        </article>
+      </div>
+      <ng-template #emptyStage><p class="empty-note">No {{ stage.name }} programs yet for {{ exam.name }}.</p></ng-template>
+    </section>
+  </ng-container>
+
+  <ng-container *ngIf="!loading && view === 'plan' && exam && displayedProgram() as current">
+    <div class="breadcrumb">
+      <a routerLink="/programs">ThinkCivil IAS</a><span class="sep">/</span>
+      <a [routerLink]="['/programs', exam._id || exam.code]">{{ exam.name }}</a><span class="sep">/</span>
+      <span>{{ stageName(current) }}</span><span class="sep">/</span>
+      <span>{{ current.programCategory }}</span>
+    </div>
+    <div class="plan-hero">
+      <span class="tag">Program: {{ stageName(current) }} · Plan: {{ current.programCategory }}</span>
+      <h1>{{ exam.name }} {{ stageName(current) }} — {{ current.programName }}</h1>
+      <p class="lead">{{ current.description || current.programCategory }}</p>
+    </div>
+    <div class="year-filter" *ngIf="yearsFor(current).length">
+      <h3>Select Year</h3>
+      <div class="year-pills">
+        <button type="button" class="year-pill" *ngFor="let year of yearsFor(current)" [class.active]="selectedYear === year" (click)="selectYear(year)">{{ year }}</button>
+      </div>
+    </div>
+    <div class="type-tabs" *ngIf="paperTabs(current).length">
+      <button type="button" class="type-tab" *ngFor="let tab of paperTabs(current)" [class.active]="paperTab === tab" (click)="selectPaper(tab)">{{ tab }}</button>
+    </div>
+    <div class="plan-body">
+      <div>
+        <article class="plan-card">
+          <h3>What's included</h3>
+          <ul *ngIf="current.features?.length; else noFeatures">
+            <li *ngFor="let feature of current.features">{{ feature }}</li>
+          </ul>
+          <ng-template #noFeatures><p>Mentor-guided coverage, year-wise batches and recorded resources.</p></ng-template>
+        </article>
+      </div>
+      <aside class="side-card">
+        <div class="meta">{{ exam.name }} › {{ stageName(current) }} › {{ current.programCategory }}</div>
+        <div class="price">₹{{ price(current) | number }} <span>/ year (base)</span></div>
+        <button type="button" class="enroll" (click)="goToBatches()">Select Batch &amp; Pay</button>
+        <div class="meta">Batches open on selected year · Seats limited · Mentor-guided</div>
+      </aside>
+    </div>
+  </ng-container>
+
+  <ng-container *ngIf="!loading && view === 'batches' && exam && displayedProgram() as current">
+    <div class="breadcrumb">
+      <a routerLink="/programs">ThinkCivil IAS</a><span class="sep">/</span>
+      <a [routerLink]="['/programs', exam._id || exam.code, current._id]">{{ current.programName }}</a><span class="sep">/</span>
+      <span>Select Batch</span>
+    </div>
+    <div class="plan-hero">
+      <span class="tag">Step 3 of 4 · Batch · Year {{ selectedYear || current.year }}</span>
+      <h1>Choose your Batch</h1>
+      <p class="lead">{{ exam.name }} › {{ stageName(current) }} › {{ current.programCategory }} › {{ selectedYear || current.year }}. Pick the batch that fits your schedule.</p>
+    </div>
+    <div class="batch-list" *ngIf="batches.length; else noBatches">
+      <article class="batch-card" *ngFor="let batch of batches">
+        <div class="batch-info">
+          <h4>{{ batch.batchName }}</h4>
+          <div class="tags">
+            <span class="badge">{{ selectedYear || current.year }}</span>
+            <span class="badge" *ngIf="batch.duration">{{ batch.duration }}</span>
+            <span class="badge" [class.seats-low]="seatsLeft(batch) !== null && seatsLeft(batch)! <= 10" *ngIf="seatsLeft(batch) !== null">{{ seatsLeft(batch) }} seats left</span>
+          </div>
+          <div class="meta-line">{{ batch.startDate | date }} — {{ batch.endDate | date }}</div>
+        </div>
+        <div class="batch-price">
+          <div class="amt">₹{{ price(current) | number }}</div>
+          <button type="button" class="btn-solid" (click)="enroll(batch)">Select this Batch</button>
+        </div>
+      </article>
+    </div>
+    <ng-template #noBatches><div class="empty-state">No batches are open for this plan yet.</div></ng-template>
+  </ng-container>
+</main>

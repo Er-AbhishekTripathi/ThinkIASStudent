@@ -11,7 +11,10 @@ export const routes: Routes = [
   {path:'program-faqs',loadComponent:()=>import('./modules/homepage/program-faqs/program-faqs.component').then(m=>m.ProgramFaqsComponent)},
   {path:'terms',loadComponent:()=>import('./shared/components/legal-policy/legal-policy.component').then(m=>m.LegalPolicyComponent),data:{policy:'terms'}},
   {path:'payment-policies',loadComponent:()=>import('./shared/components/legal-policy/legal-policy.component').then(m=>m.LegalPolicyComponent),data:{policy:'payments'}},
-  {path:'programs',loadComponent:()=>import('./modules/homepage/program-catalog/program-catalog.component').then(m=>m.ProgramCatalogComponent)},
+  {path:'programs',loadComponent:()=>import('./modules/homepage/exam-journey/exam-journey.component').then(m=>m.ExamJourneyComponent)},
+  {path:'programs/:examId',loadComponent:()=>import('./modules/homepage/exam-journey/exam-journey.component').then(m=>m.ExamJourneyComponent)},
+  {path:'programs/:examId/:programId',loadComponent:()=>import('./modules/homepage/exam-journey/exam-journey.component').then(m=>m.ExamJourneyComponent)},
+  {path:'programs/:examId/:programId/:step',loadComponent:()=>import('./modules/homepage/exam-journey/exam-journey.component').then(m=>m.ExamJourneyComponent)},
   {path: 'prelims-test-series', loadComponent: () => import('./shared/components/test-series-schedule/test-series-schedule.component').then(m => m.TestSeriesScheduleComponent), canActivate: [authGuard, roleGuard], data: {role: 'student', kind: 'pre'}},
   {path: 'mains-test-series', loadComponent: () => import('./shared/components/test-series-schedule/test-series-schedule.component').then(m => m.TestSeriesScheduleComponent), canActivate: [authGuard, roleGuard], data: {role: 'student', kind: 'mains'}},
   {
