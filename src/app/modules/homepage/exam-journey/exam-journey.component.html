@@ -29,10 +29,10 @@
     </div>
     <section class="program-group" *ngFor="let stage of stages">
       <h2>{{ stage.name }}</h2>
-      <div class="program-grid" *ngIf="programsForStage(stage.name).length; else emptyStage">
-        <article class="plan-card" *ngFor="let program of programsForStage(stage.name)">
-          <h3>{{ program.programName }}</h3>
-          <p>{{ program.programCategory }} · {{ program.year }}</p>
+      <div class="program-grid" *ngIf="plansForStage(stage.name).length; else emptyStage">
+        <article class="plan-card" *ngFor="let program of plansForStage(stage.name)">
+          <h3>{{ program.programCategory }}</h3>
+          <p>{{ program.description || program.programName }}</p>
           <button type="button" class="btn-solid" (click)="openPlan(program)">Open Page</button>
         </article>
       </div>
@@ -52,24 +52,32 @@
       <h1>{{ exam.name }} {{ stageName(current) }} — {{ current.programName }}</h1>
       <p class="lead">{{ current.description || current.programCategory }}</p>
     </div>
-    <div class="year-filter" *ngIf="yearsFor(current).length">
+    <div class="year-filter">
       <h3>Select Year</h3>
       <div class="year-pills">
         <button type="button" class="year-pill" *ngFor="let year of yearsFor(current)" [class.active]="selectedYear === year" (click)="selectYear(year)">{{ year }}</button>
       </div>
     </div>
     <div class="type-tabs" *ngIf="paperTabs(current).length">
-      <button type="button" class="type-tab" *ngFor="let tab of paperTabs(current)" [class.active]="paperTab === tab" (click)="selectPaper(tab)">{{ tab }}</button>
+      <button type="button" class="type-tab" *ngFor="let tab of paperTabs(current)" [class.active]="paperTab === tab" (click)="selectPaper(tab)">{{ paperLabel(tab) }}</button>
     </div>
     <div class="plan-body">
-      <div>
-        <article class="plan-card">
-          <h3>What's included</h3>
-          <ul *ngIf="current.features?.length; else noFeatures">
-            <li *ngFor="let feature of current.features">{{ feature }}</li>
-          </ul>
-          <ng-template #noFeatures><p>Mentor-guided coverage, year-wise batches and recorded resources.</p></ng-template>
-        </article>
+      <div class="include-stack">
+        <ng-container *ngIf="isCombo(current); else standardIncludes">
+          <article class="plan-card" *ngFor="let item of comboIncludes(current)">
+            <h3>{{ item.title }}</h3>
+            <p>{{ item.detail }}</p>
+          </article>
+        </ng-container>
+        <ng-template #standardIncludes>
+          <article class="plan-card">
+            <h3>What's included</h3>
+            <ul *ngIf="current.features?.length; else noFeatures">
+              <li *ngFor="let feature of current.features">{{ feature }}</li>
+            </ul>
+            <ng-template #noFeatures><p>Mentor-guided coverage, year-wise batches and recorded resources.</p></ng-template>
+          </article>
+        </ng-template>
       </div>
       <aside class="side-card">
         <div class="meta">{{ exam.name }} › {{ stageName(current) }} › {{ current.programCategory }}</div>
@@ -97,10 +105,11 @@
           <h4>{{ batch.batchName }}</h4>
           <div class="tags">
             <span class="badge">{{ selectedYear || current.year }}</span>
+            <span class="badge" *ngIf="current.medium">{{ current.medium }}</span>
             <span class="badge" *ngIf="batch.duration">{{ batch.duration }}</span>
             <span class="badge" [class.seats-low]="seatsLeft(batch) !== null && seatsLeft(batch)! <= 10" *ngIf="seatsLeft(batch) !== null">{{ seatsLeft(batch) }} seats left</span>
           </div>
-          <div class="meta-line">{{ batch.startDate | date }} — {{ batch.endDate | date }}</div>
+          <div class="meta-line">{{ batch.timing || ((batch.startDate | date) + ' — ' + (batch.endDate | date)) }}</div>
         </div>
         <div class="batch-price">
           <div class="amt">₹{{ price(current) | number }}</div>
@@ -109,5 +118,40 @@
       </article>
     </div>
     <ng-template #noBatches><div class="empty-state">No batches are open for this plan yet.</div></ng-template>
+  </ng-container>
+
+  <ng-container *ngIf="!loading && view === 'payment' && exam && displayedProgram() as current">
+    <div class="breadcrumb">
+      <a [routerLink]="['/programs', exam._id || exam.code, current._id, 'batches']" [queryParams]="{ year: selectedYear }">{{ current.programCategory }} › Batch</a><span class="sep">/</span>
+      <span>Payment</span>
+    </div>
+    <div class="plan-hero">
+      <span class="tag">Step 4 of 4 · Final Payment</span>
+      <h1>Confirm &amp; Pay</h1>
+      <p class="lead">{{ exam.name }} › {{ stageName(current) }} › {{ current.programCategory }} › {{ selectedYear || current.year }} › {{ selectedBatch?.batchName }}</p>
+    </div>
+    <div class="pay-grid" *ngIf="selectedBatch; else waitingBatch">
+      <article class="plan-card">
+        <h3>Order Summary</h3>
+        <div class="pay-summary-row"><span>{{ current.programCategory }} ({{ selectedBatch.batchName }})</span><span>₹{{ batchFee() | number }}</span></div>
+        <div class="pay-summary-row"><span>Batch Timing</span><span>{{ selectedBatch.timing || ((selectedBatch.startDate | date) + ' — ' + (selectedBatch.endDate | date)) }}</span></div>
+        <div class="pay-summary-row"><span>Year</span><span>{{ selectedYear || current.year }}</span></div>
+        <div class="pay-summary-row"><span>GST (18%)</span><span>₹{{ gstAmount() | number }}</span></div>
+        <div class="pay-summary-row total"><span>Total Payable</span><span>₹{{ payableTotal() | number }}</span></div>
+        <h3 class="pay-method-title">Payment Method</h3>
+        <div class="pay-methods">
+          <label><input type="radio" name="pm" value="upi" [(ngModel)]="payMethod"> UPI (GPay / PhonePe / Paytm)</label>
+          <label><input type="radio" name="pm" value="card" [(ngModel)]="payMethod"> Credit / Debit Card</label>
+          <label><input type="radio" name="pm" value="netbanking" [(ngModel)]="payMethod"> Net Banking</label>
+        </div>
+      </article>
+      <aside class="side-card">
+        <div class="meta">You Pay</div>
+        <div class="price">₹{{ payableTotal() | number }} <span>one-time</span></div>
+        <button type="button" class="enroll" (click)="payNow()">Pay ₹{{ payableTotal() | number }} Now</button>
+        <div class="pay-note">Razorpay opens after you confirm. Coupon and GST settlement happen on the payment screen.</div>
+      </aside>
+    </div>
+    <ng-template #waitingBatch><div class="empty-state">Loading selected batch...</div></ng-template>
   </ng-container>
 </main>

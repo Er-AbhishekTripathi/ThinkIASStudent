@@ -139,9 +139,40 @@ export class HeaderComponent implements OnInit, AfterViewInit, OnDestroy {
     return this.programs.filter((program) => this.matchExam(program, this.selectedMegaExam) && program.programStage === stageName);
   }
 
+  megaPlans(stageName: string): any[] {
+    const seen = new Set<string>();
+    return this.megaPrograms(stageName).filter((program) => {
+      const key = program.programCategory || program.programName;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  }
+
   testSeriesPrograms(): any[] {
     const exam = this.selectedMegaExam;
     return this.programs.filter((program) => (!exam || this.matchExam(program, exam)) && /test series/i.test(program.programCategory || ''));
+  }
+
+  testSeriesQuick(): any[] {
+    const order = ['Test Series', 'Optional Test Series'];
+    const seen = new Set<string>();
+    return this.testSeriesPrograms().filter((program) => {
+      const key = `${program.programStage}|${program.programCategory}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    }).sort((a, b) => {
+      const stage = (name: string) => (/prelims/i.test(name) ? 0 : /mains/i.test(name) ? 1 : 2);
+      return stage(a.programStage) - stage(b.programStage) || order.indexOf(a.programCategory) - order.indexOf(b.programCategory);
+    });
+  }
+
+  testSeriesLabel(program: any): string {
+    const exam = this.currentLanguage === 'hi'
+      ? (this.selectedMegaExam?.nameHindi || this.selectedMegaExam?.name || '')
+      : (this.selectedMegaExam?.name || '');
+    return `${exam} ${program.programStage} ${program.programCategory}`.replace(/\s+/g, ' ').trim();
   }
 
   selectMegaExam(exam: any, event?: Event): void {

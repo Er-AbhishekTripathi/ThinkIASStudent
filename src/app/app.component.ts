@@ -83,7 +83,7 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewChecked {
   sidenavOpen = signal(true);
   showProfileDropdown = signal(false);
   showNotifications = signal(false);
-   private expandedMenus = signal<Set<string>>(new Set(['Mentorship Course', 'Test Series', 'Prelims Examination', 'Mains Examination']));
+   private expandedMenus = signal<Set<string>>(new Set(['Mentorship Course', 'Test Series', 'Mentorship Course|Prelims Examination', 'Mentorship Course|Mains Examination']));
   
   private breakpointSubscription!: Subscription;
 
@@ -290,6 +290,10 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewChecked {
     if (this.isMobile()) {
       this.closeSidenav();
     }
+  }
+
+  menuKey(item: MenuItem, parent = ''): string {
+    return [parent, item.name, item.path].filter(Boolean).join('|');
   }
 
   toggleMenu(menuName: string): void {
