@@ -73,7 +73,7 @@ export class LoginComponent {
       // ✅ Allow student
       this.authService.setAuthData(response);
       const returnUrl=this.route.snapshot.queryParamMap.get('returnUrl');
-      this.router.navigateByUrl(returnUrl?.startsWith('/program/') ? returnUrl : '/dashboard');
+      this.router.navigateByUrl(returnUrl?.startsWith('/') ? returnUrl : '/dashboard');
       this.snackBar.open('Login successful!', 'Close', {
         duration: 3000
       });

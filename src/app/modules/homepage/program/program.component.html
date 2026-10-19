@@ -4,11 +4,16 @@
     <div class="container">
       <h1 class="section-title">
         <i class="fas fa-graduation-cap"></i>
-        {{ 'Our Programs' | t }}
+        {{ 'Choose your Examination' | t }}
       </h1>
       <p class="section-subtitle">
-        {{ 'Choose the right program for your UPSC preparation journey' | t }}
+        Examination → Program → Plan → Batch → Payment
       </p>
+      <div class="exam-pick-home" *ngIf="examCards.length">
+        <button type="button" class="exam-pick-chip" *ngFor="let exam of examCards" (click)="openExam(exam)">
+          {{ exam.name }}
+        </button>
+      </div>
     </div>
   </div>
 

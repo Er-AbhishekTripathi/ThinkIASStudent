@@ -43,6 +43,24 @@
   margin: 0;
 }
 
+.exam-pick-home {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 18px;
+}
+.exam-pick-chip {
+  border: 1.5px solid #cfe0d6;
+  background: #fff;
+  color: #0d47a1;
+  border-radius: 22px;
+  padding: 9px 18px;
+  font-weight: 800;
+  cursor: pointer;
+}
+.exam-pick-chip:hover { border-color: #f4511e; color: #f4511e; background: #fff0ea; }
+
 /* Filters Section */
 .filters-section {
   background: rgba(255,255,255,.9);

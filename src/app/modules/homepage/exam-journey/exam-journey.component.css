@@ -1,0 +1,51 @@
+:host { display: block; background: #f7f9fc; color: #1a1f2b; min-height: 70vh; font-family: 'Segoe UI', Roboto, Arial, sans-serif; }
+.journey { max-width: 1100px; margin: 0 auto; padding: 24px 24px 72px; }
+.breadcrumb { font-size: 13px; color: #5b6472; font-weight: 600; }
+.breadcrumb a { text-decoration: none; color: #0d47a1; }
+.sep { margin: 0 6px; color: #c6ccd6; }
+.plan-hero { margin: 14px 0 22px; }
+.tag { display: inline-block; background: #fff0ea; color: #f4511e; font-weight: 700; font-size: 12px; padding: 5px 12px; border-radius: 20px; margin-bottom: 12px; }
+.plan-hero h1 { font-size: 32px; font-weight: 800; margin: 0 0 8px; }
+.lead { font-size: 15.5px; color: #5b6472; max-width: 680px; line-height: 1.6; }
+.exam-pick-grid, .program-grid, .enrolled-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 16px; }
+.exam-pick-card, .plan-card, .side-card, .batch-card { background: #fff; border: 1.5px solid #e4e8ee; border-radius: 16px; padding: 22px; }
+.exam-badge { width: 48px; height: 48px; border-radius: 12px; background: #e8f2fd; color: #0d47a1; display: flex; align-items: center; justify-content: center; font-weight: 800; margin-bottom: 14px; }
+.exam-pick-card h3, .plan-card h3 { margin: 0 0 6px; font-size: 17px; }
+.exam-pick-card p, .plan-card p, .empty-note { font-size: 13.5px; color: #5b6472; margin: 8px 0 14px; line-height: 1.6; }
+.btn-solid, .enroll { display: inline-block; background: #f4511e; color: #fff; border: 0; border-radius: 8px; padding: 10px 20px; font-weight: 700; cursor: pointer; text-decoration: none; }
+.enroll { display: block; width: 100%; text-align: center; padding: 13px; border-radius: 10px; margin: 10px 0; }
+.program-group { margin: 0 0 36px; }
+.program-group h2 { font-size: 14px; text-transform: uppercase; letter-spacing: .5px; color: #0d47a1; font-weight: 800; margin-bottom: 14px; padding-bottom: 10px; border-bottom: 2px solid #e4e8ee; }
+.year-filter { margin: 22px 0; }
+.year-filter h3 { font-size: 13px; text-transform: uppercase; letter-spacing: .4px; color: #0d47a1; margin-bottom: 10px; font-weight: 800; }
+.year-pills, .type-tabs { display: flex; gap: 10px; flex-wrap: wrap; }
+.year-pill { padding: 9px 18px; border: 1.5px solid #e4e8ee; border-radius: 22px; font-weight: 700; background: #fff; cursor: pointer; }
+.year-pill.active { border-color: #1e88e5; background: #e8f2fd; color: #0d47a1; }
+.type-tabs { margin: 8px 0 18px; border-bottom: 1px solid #e4e8ee; }
+.type-tab { padding: 10px 6px; font-weight: 700; color: #5b6472; border: 0; border-bottom: 3px solid transparent; background: none; cursor: pointer; }
+.type-tab.active { color: #0d47a1; border-bottom-color: #f4511e; }
+.plan-body { display: grid; grid-template-columns: 2fr 1fr; gap: 28px; margin-top: 22px; }
+.plan-card ul { padding-left: 18px; color: #5b6472; line-height: 1.9; }
+.side-card { height: fit-content; }
+.price { font-size: 26px; font-weight: 800; margin: 6px 0 14px; }
+.price span, .meta, .meta-line { font-size: 13px; color: #5b6472; }
+.batch-list { display: flex; flex-direction: column; gap: 14px; }
+.batch-card { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+.tags { display: flex; gap: 8px; flex-wrap: wrap; margin: 6px 0; }
+.badge { font-size: 11.5px; font-weight: 700; padding: 3px 10px; border-radius: 20px; background: #e8f2fd; color: #0d47a1; }
+.badge.seats-low { background: #ffe9e5; color: #f4511e; }
+.amt { font-size: 20px; font-weight: 800; margin-bottom: 8px; text-align: right; }
+.include-stack { display: flex; flex-direction: column; gap: 16px; }
+.pay-grid { display: grid; grid-template-columns: 1.4fr 1fr; gap: 28px; }
+.pay-summary-row { display: flex; justify-content: space-between; font-size: 14px; color: #5b6472; padding: 9px 0; border-bottom: 1px dashed #e4e8ee; }
+.pay-summary-row.total { color: #1a1f2b; font-weight: 800; font-size: 16px; border-bottom: 0; padding-top: 14px; }
+.pay-method-title { margin-top: 20px; }
+.pay-methods { display: flex; flex-direction: column; gap: 10px; margin: 16px 0; }
+.pay-methods label { display: flex; align-items: center; gap: 10px; border: 1.5px solid #e4e8ee; border-radius: 10px; padding: 12px 14px; font-size: 14px; font-weight: 600; }
+.pay-note { font-size: 12px; color: #5b6472; margin-top: 10px; text-align: center; }
+.empty-state, .journey-state, .journey-error { padding: 28px; border-radius: 14px; background: #fff; border: 1.5px dashed #e4e8ee; text-align: center; color: #5b6472; }
+.journey-error { border-color: #fecaca; background: #fff1f2; color: #be123c; }
+@media (max-width: 760px) {
+  .plan-hero h1 { font-size: 26px; }
+  .plan-body, .pay-grid { grid-template-columns: 1fr; }
+}

@@ -122,16 +122,95 @@ export class HeaderComponent implements OnInit, AfterViewInit, OnDestroy {
     this.checkMobileView();
   }
 
+  loggedIn(): boolean {
+    return !!this.authService.getToken();
+  }
+
+  idOf(value: any): string {
+    if (!value) return '';
+    return typeof value === 'string' ? value : (value._id || '');
+  }
+
+  matchExam(program: any, exam: any): boolean {
+    if (!exam) return false;
+    const mapped = this.idOf(program?.examId);
+    return mapped === this.idOf(exam) || program?.examination === exam.name || program?.examination === exam.code;
+  }
+
+  megaPrograms(stageName: string): any[] {
+    if (!this.selectedMegaExam) return [];
+    return this.programs.filter((program) => this.matchExam(program, this.selectedMegaExam) && program.programStage === stageName);
+  }
+
+  megaPlans(stageName: string): any[] {
+    const seen = new Set<string>();
+    return this.megaPrograms(stageName).filter((program) => {
+      const key = program.programCategory || program.programName;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  }
+
+  testSeriesPrograms(): any[] {
+    const exam = this.selectedMegaExam;
+    return this.programs.filter((program) => (!exam || this.matchExam(program, exam)) && /test series/i.test(program.programCategory || ''));
+  }
+
+  testSeriesQuick(): any[] {
+    const order = ['Test Series', 'Optional Test Series'];
+    const seen = new Set<string>();
+    return this.testSeriesPrograms().filter((program) => {
+      const key = `${program.programStage}|${program.programCategory}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    }).sort((a, b) => {
+      const stage = (name: string) => (/prelims/i.test(name) ? 0 : /mains/i.test(name) ? 1 : 2);
+      return stage(a.programStage) - stage(b.programStage) || order.indexOf(a.programCategory) - order.indexOf(b.programCategory);
+    });
+  }
+
+  testSeriesLabel(program: any): string {
+    const exam = this.currentLanguage === 'hi'
+      ? (this.selectedMegaExam?.nameHindi || this.selectedMegaExam?.name || '')
+      : (this.selectedMegaExam?.name || '');
+    return `${exam} ${program.programStage} ${program.programCategory}`.replace(/\s+/g, ' ').trim();
+  }
+
+  selectMegaExam(exam: any, event?: Event): void {
+    event?.preventDefault();
+    event?.stopPropagation();
+    this.selectedMegaExam = exam;
+  }
+
+  openSyllabus(type: string): void {
+    this.dialog.open(ResourcesViewComponent, {
+      data: { type },
+      width: 'calc(100vw - 40px)',
+      height: 'calc(100vh - 40px)',
+      maxWidth: '1200px',
+      maxHeight: '600px',
+      panelClass: 'resources-dialog-container'
+    });
+  }
+
   private loadCatalog(): void {
     this.http.get<any>(environment.apiUrl + '/exams').subscribe({
       next: (response) => {
-        this.programGroups = (response?.data || []).map((exam: any) => ({
+        this.exams = response?.data || [];
+        this.selectedMegaExam = this.exams[0] || null;
+        this.programGroups = this.exams.map((exam: any) => ({
           label: exam.name,
           hi: exam.nameHindi || exam.name,
           examination: exam.name
         }));
       },
-      error: () => { this.programGroups = []; }
+      error: () => { this.exams = []; this.programGroups = []; }
+    });
+    this.http.get<any>(environment.apiUrl + '/program-stages').subscribe({
+      next: (response) => { this.stages = response?.data || []; },
+      error: () => { this.stages = []; }
     });
     this.http.get<any>(environment.apiUrl + '/programs?activeOnly=true').subscribe({
       next: (response) => { this.programs = response.data || []; },

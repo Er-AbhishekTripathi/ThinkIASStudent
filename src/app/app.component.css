@@ -251,6 +251,12 @@
     width: calc(100% - 1.8rem);
     font-size: 0.9rem;
   }
+  .nested-submenu { padding-bottom: 0.15rem; }
+  .nested-item {
+    margin-left: 2.2rem;
+    width: calc(100% - 2.7rem);
+    font-size: 0.84rem;
+  }
 
   /* Active Link */
   .active-link {
