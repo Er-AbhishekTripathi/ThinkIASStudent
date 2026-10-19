@@ -104,7 +104,7 @@
       </mat-card-header>
 
       <mat-card-content>
-        <p class="test-description">{{ test.description || 'No description available' }}</p>
+        <div class="test-description" [innerHTML]="test.description || 'No description available'"></div>
         
         <!-- Test Details -->
         <div class="test-details">

@@ -25,6 +25,8 @@ export interface Test {
   startTime: string;
   duration: number;
   introPage?: string;
+  introPageHi?: string;
+  introFontSize?: number;
   questions: Question[];
   endTime?: string;
   isActive?: boolean;
@@ -153,6 +155,8 @@ export interface DetailedResult {
     startTime: string;
     duration: number;
     introPage?: string;
+    introPageHi?: string;
+    introFontSize?: number;
     marksPerQuestion: number;
     negativeMarks: number;
     questionUids: string[];

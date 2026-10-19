@@ -233,7 +233,7 @@ export class LiveTestsComponent implements OnInit, OnDestroy {
       this.showIntroPage = false; // Start with rules page
       this.agreeToRules = false;
       this.agreeToIntro = false;
-      this.rulesLanguage = 'english';
+      this.rulesLanguage = localStorage.getItem('preferredLanguage') === 'hi' ? 'hindi' : 'english';
     } else {
       const now = new Date();
       const startTime = new Date(test.startTime);
@@ -286,12 +286,20 @@ export class LiveTestsComponent implements OnInit, OnDestroy {
 
   viewIntroduction(test: any) {
     this.introductionTest = test;
+    this.rulesLanguage = localStorage.getItem('preferredLanguage') === 'hi' ? 'hindi' : 'english';
     this.showIntroductionModal = true;
   }
 
   closeIntroduction() {
     this.showIntroductionModal = false;
     this.introductionTest = null;
+  }
+
+  getIntroContent(test: any): string {
+    if (this.rulesLanguage === 'hindi') {
+      return test?.introPageHi || test?.introPage || '';
+    }
+    return test?.introPage || '';
   }
 
   // PDF Download functionality

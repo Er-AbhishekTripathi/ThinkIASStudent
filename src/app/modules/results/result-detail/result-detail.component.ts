@@ -63,6 +63,8 @@ interface NormalizedResult {
     title: string;
     description?: string;
     introPage?: string | { english?: string; hindi?: string };
+    introPageHi?: string;
+    introFontSize?: number;
     duration: number;
     marksPerQuestion: number;
     negativeMarks: number;
@@ -338,32 +340,11 @@ export class ResultDetailComponent implements OnInit, AfterViewInit, OnDestroy {
         next: (result: DetailedResult) => {
           console.log('Regular result loaded:', result);
           this.processRegularResult(result);
-          const finishLoading = () => {
-            this.loading.set(false);
-            setTimeout(() => {
-              this.initializePerformanceChart();
-              this.initializeCategoryChart();
-            }, 100);
-          };
-
-          if (result.test.introPage) {
-            finishLoading();
-            return;
-          }
-
-          this.testService.getUpcomingTests().subscribe({
-            next: tests => {
-              const test = tests.find(item => item._id === result.test._id);
-              this.result.update(current => current
-                ? { ...current, test: { ...current.test, introPage: test?.introPage || '' } }
-                : current);
-              finishLoading();
-            },
-            error: (error: any) => {
-              console.error('Error loading test introduction:', error);
-              finishLoading();
-            }
-          });
+          this.loading.set(false);
+          setTimeout(() => {
+            this.initializePerformanceChart();
+            this.initializeCategoryChart();
+          }, 100);
         },
         error: (error: any) => {
           console.error('Error loading result detail:', error);
@@ -396,6 +377,8 @@ export class ResultDetailComponent implements OnInit, AfterViewInit, OnDestroy {
         title: result.test.title,
         description: result.test.description,
         introPage: result.test.introPage,
+        introPageHi: result.test.introPageHi,
+        introFontSize: result.test.introFontSize,
         duration: result.test.duration,
         marksPerQuestion: result.test.marksPerQuestion,
         negativeMarks: result.test.negativeMarks,
@@ -985,6 +968,50 @@ export class ResultDetailComponent implements OnInit, AfterViewInit, OnDestroy {
     this.router.navigate([isDemoTest ? '/demo-tests' : '/prelims-results']);
   }
 
+  private formatIntroductionForPrint(introduction: string): string {
+    const container = document.createElement('div');
+    container.innerHTML = introduction;
+
+    const blocks = Array.from(container.children).filter((element): element is HTMLElement =>
+      element instanceof HTMLElement && /^(P|DIV|H[1-6])$/.test(element.tagName)
+    );
+    const meaningfulBlocks = blocks.filter(block => block.textContent?.trim());
+    const firstBlock = meaningfulBlocks[0];
+    const firstText = firstBlock?.textContent?.trim() || '';
+    const hasCenteredBookletHeading = !!firstBlock
+      && (/booklet\s+series/i.test(firstText) || /^[\u00a0\s]{8,}/.test(firstBlock.textContent || ''));
+
+    let inBookletHeading = hasCenteredBookletHeading;
+    for (const block of meaningfulBlocks) {
+      const text = block.textContent?.trim() || '';
+      const explicitAlignment = block.style.textAlign || block.getAttribute('align');
+      const isMarksRow = /\btime allowed\b|\bmaximum marks\b/i.test(text);
+
+      if (!explicitAlignment && inBookletHeading && !isMarksRow && text.length <= 80) {
+        block.style.textAlign = 'center';
+        block.innerHTML = block.innerHTML.replace(/^(?:(?:&nbsp;|&#160;|&#xA0;)|[\s\u00a0])+/i, '');
+      } else if (!isMarksRow) {
+        inBookletHeading = false;
+      }
+
+      if (isMarksRow && !explicitAlignment && block.children.length === 0) {
+        const parts = (block.textContent || '').trim().split(/[\s\u00a0]{8,}/);
+        if (parts.length === 2 && parts.every(part => part.trim())) {
+          block.classList.add('intro-alignment-row');
+          block.replaceChildren();
+          const left = document.createElement('span');
+          left.textContent = parts[0].trim();
+          const right = document.createElement('span');
+          right.textContent = parts[1].trim();
+          right.className = 'intro-alignment-right';
+          block.append(left, right);
+        }
+      }
+    }
+
+    return container.innerHTML;
+  }
+
   downloadQuestionPaper(language: 'english' | 'hindi') {
     const res = this.result();
     if (!res?.test?.questions?.length) {
@@ -1014,10 +1041,17 @@ export class ResultDetailComponent implements OnInit, AfterViewInit, OnDestroy {
       return `<article class="q"><b class="no">${index + 1}.</b><div class="body">${text}<div class="options">${options}</div></div></article>`;
     }).join('');
     const rawIntroduction = res.test.introPage;
-    const languageIntroduction = typeof rawIntroduction === 'string'
-      ? (isHindi ? rawIntroduction : '')
-      : rawIntroduction?.[selectedLanguage] || '';
-    const introduction = sanitizeHtml(languageIntroduction);
+    const englishIntroduction = typeof rawIntroduction === 'string'
+      ? rawIntroduction
+      : rawIntroduction?.english || '';
+    const languageIntroduction = isHindi
+      ? res.test.introPageHi || (typeof rawIntroduction === 'string' ? '' : rawIntroduction?.hindi) || englishIntroduction
+      : englishIntroduction;
+    const introduction = this.formatIntroductionForPrint(sanitizeHtml(languageIntroduction));
+    const savedIntroFontSize = Number(res.test.introFontSize);
+    const introFontSize = [14, 16, 18, 20, 22, 24, 28].includes(savedIntroFontSize)
+      ? savedIntroFontSize
+      : 12;
     const safeTitle = title.replace(/[<>:"/\\|?*\u0000-\u001F]/g, '-').trim() || 'Question-Paper';
     const escapedTitle = safeTitle.replace(/[&<>"']/g, character => ({
       '&': '&amp;',
@@ -1040,8 +1074,10 @@ export class ResultDetailComponent implements OnInit, AfterViewInit, OnDestroy {
     .page { box-sizing: border-box; min-height: 270mm; padding: 6mm 8mm; font-size: 13px; line-height: 1.5; }
     .intro-page { box-sizing: border-box; width: 100%; height: 273mm; min-height: 273mm; max-height: 273mm; overflow: hidden; padding: 0; break-after: page; page-break-after: always; }
     .intro-viewport { width: 100%; height: 100%; overflow: hidden; }
-    .intro-content { width: 100%; font-size: 12px; line-height: 1.25; overflow-wrap: anywhere; }
+    .intro-content { width: 100%; font-size: ${introFontSize}px; line-height: 1.25; overflow-wrap: anywhere; }
     .intro-content p { margin: 0 0 4px; }
+    .intro-content .intro-alignment-row { display: flex; justify-content: space-between; gap: 12px; }
+    .intro-content .intro-alignment-right { text-align: right; }
     .intro-content img { max-width: 100%; max-height: 245mm; object-fit: contain; }
     .intro-content table { max-width: 100%; }
     .questions { margin-top: 18px; column-count: 2; column-gap: 28px; column-rule: 1px solid #111; }
@@ -1054,11 +1090,11 @@ export class ResultDetailComponent implements OnInit, AfterViewInit, OnDestroy {
   </style>
 </head>
 <body>
-  <main class="intro-page">
+  ${introduction ? `<main class="intro-page">
     <div class="intro-viewport">
-      <section id="intro-content" class="intro-content">${introduction || '&nbsp;'}</section>
+      <section id="intro-content" class="intro-content" data-font-size="${introFontSize}">${introduction || '&nbsp;'}</section>
     </div>
-  </main>
+  </main>` : ''}
   <main class="page">
     <section class="questions">${questionHtml}</section>
   </main>
@@ -1072,7 +1108,7 @@ export class ResultDetailComponent implements OnInit, AfterViewInit, OnDestroy {
       const content = printWindow.document.getElementById('intro-content');
       const viewport = printWindow.document.querySelector('.intro-viewport');
       if (content && viewport) {
-        let fontSize = 12;
+        let fontSize = Number(content.dataset['fontSize']) || 12;
         while (content.scrollHeight > viewport.clientHeight && fontSize > 7) {
           fontSize -= 0.5;
           content.style.fontSize = `${fontSize}px`;
