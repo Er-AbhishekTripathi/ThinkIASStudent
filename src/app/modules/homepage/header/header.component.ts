@@ -57,15 +57,12 @@ export class HeaderComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private http = inject(HttpClient);
   programs: any[] = [];
-  programGroups = [
-    {label:'Test Series',hi:'टेस्ट सीरीज',categories:['Test Series','Optional Test Series']}
-  ];
+  exams: any[] = [];
+  stages: any[] = [];
+  selectedMegaExam: any = null;
+  programGroups: Array<{label:string;hi:string;examination:string}> = [];
   groupPrograms(group: any) {
-    return this.programs.filter(program =>
-      Array.isArray(group.categories)
-        ? group.categories.includes(program.programCategory)
-        : group.examination === program.examination
-    );
+    return this.programs.filter(program => this.matchExam(program, { name: group.examination, _id: group.examination }));
   }
   programDisplayName(program: any): string {
     if (this.currentLanguage !== 'hi') return program.programName;

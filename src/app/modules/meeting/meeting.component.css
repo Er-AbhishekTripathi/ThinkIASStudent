@@ -592,3 +592,15 @@
   .meeting-header { padding: 22px 24px; }
   .meetings-section { padding: 28px 20px; }
 }
+
+.meeting-container.student {
+  width: 100%;
+  max-width: none;
+  margin: 0 auto 32px;
+}
+
+@media (max-width: 768px) {
+  .meeting-container.student {
+    margin-bottom: 24px;
+  }
+}

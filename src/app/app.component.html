@@ -133,12 +133,12 @@
                   <span class="nav-text">{{ child.name | t }}</span>
                 </a>
                 <button *ngIf="child.children?.length" type="button" class="nav-item nav-parent submenu-item"
-                  [class.active-parent]="isMenuExpanded(menuKey(child, item.name))" (click)="toggleMenu(menuKey(child, item.name))">
+                  [class.active-parent]="isMenuExpanded(menuKey(child, menuKey(item)))" (click)="toggleMenu(menuKey(child, menuKey(item)), menuKey(item))">
                   <mat-icon class="nav-icon">{{ getMenuIcon(child) }}</mat-icon>
                   <span class="nav-text">{{ child.name | t }}</span>
-                  <mat-icon class="expand-icon">{{ isMenuExpanded(menuKey(child, item.name)) ? 'expand_less' : 'expand_more' }}</mat-icon>
+                  <mat-icon class="expand-icon">{{ isMenuExpanded(menuKey(child, menuKey(item))) ? 'expand_less' : 'expand_more' }}</mat-icon>
                 </button>
-                <div *ngIf="child.children?.length && isMenuExpanded(menuKey(child, item.name))" class="nested-submenu">
+                <div *ngIf="child.children?.length && isMenuExpanded(menuKey(child, menuKey(item)))" class="nested-submenu">
                   <a *ngFor="let leaf of child.children" [routerLink]="leaf.path"
                     routerLinkActive="active-link" class="nav-item submenu-item nested-item" (click)="closeSidenavOnMobile()">
                     <mat-icon class="nav-icon">{{ getMenuIcon(leaf) }}</mat-icon>

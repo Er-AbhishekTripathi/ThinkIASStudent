@@ -283,8 +283,9 @@
 
 /* Final dashboard polish: calmer surfaces, stronger hierarchy, and clearer actions. */
 .dashboard-container {
-  max-width: 1360px;
-  padding: 24px clamp(16px, 3vw, 36px) 48px;
+  width: 100%;
+  max-width: none;
+  padding: 12px clamp(12px, 1.5vw, 20px) 32px;
   background: #f6f8fb;
 }
 

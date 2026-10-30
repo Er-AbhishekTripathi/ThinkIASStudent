@@ -72,10 +72,6 @@ app-test-series-schedule .hero-mark {
 
 /* Responsive */
 @media (max-width: 768px) {
-  .mat-sidenav {
-    width: 200px !important;
-  }
-  
   .mat-toolbar span {
     font-size: 14px;
   }
@@ -136,6 +132,20 @@ body {
   font-family: 'Outfit', sans-serif;
   font-family: 'Poppins', sans-serif;
 }
+
+.content-wrapper > router-outlet + * {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+
+.content-wrapper > router-outlet + * > :first-child {
+  width: 100%;
+  max-width: none;
+  min-width: 0;
+}
+
 /* .container {
 	max-width: 1440px;
 	margin: auto;

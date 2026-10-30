@@ -83,7 +83,7 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewChecked {
   sidenavOpen = signal(true);
   showProfileDropdown = signal(false);
   showNotifications = signal(false);
-   private expandedMenus = signal<Set<string>>(new Set(['Mentorship Course', 'Test Series', 'Mentorship Course|Prelims Examination', 'Mentorship Course|Mains Examination']));
+  private expandedMenus = signal<Set<string>>(new Set());
   
   private breakpointSubscription!: Subscription;
 
@@ -95,6 +95,9 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewChecked {
       if (this.authService.isLoggedIn() && !this.notificationService.notifications().length) this.notificationService.load();
       if (this.authService.isLoggedIn()) this.notificationService.startPolling();
       this.currentRoute.set(event.url);
+      if (this.firstPathSegment(event.urlAfterRedirects) === 'dashboard') {
+        this.expandedMenus.set(new Set());
+      }
       // Close sidenav on mobile after navigation
       if (this.isMobile()) {
         this.closeSidenav();
@@ -296,10 +299,16 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewChecked {
     return [parent, item.name, item.path].filter(Boolean).join('|');
   }
 
-  toggleMenu(menuName: string): void {
+  toggleMenu(menuName: string, parentMenuName = ''): void {
     this.expandedMenus.update(menus => {
-      const updated = new Set(menus);
-      updated.has(menuName) ? updated.delete(menuName) : updated.add(menuName);
+      if (!parentMenuName) {
+        return menus.has(menuName) ? new Set() : new Set([menuName]);
+      }
+
+      const updated = new Set([...menus].filter(menu => menu === parentMenuName));
+      if (!menus.has(menuName)) {
+        updated.add(menuName);
+      }
       return updated;
     });
   }

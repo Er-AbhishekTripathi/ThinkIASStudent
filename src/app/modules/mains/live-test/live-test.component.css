@@ -2045,3 +2045,36 @@
   }
 }   
 .test-list-filters{display:flex;gap:12px;flex-wrap:wrap;margin:16px 0}.test-list-filters input,.test-list-filters select{padding:12px;border:1px solid #dce1ed;border-radius:8px;background:white}.test-list-filters input{flex:1;min-width:180px}.test-card-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px}.test-summary-card{padding:22px;border:1px solid #dce1ed;border-radius:14px;background:white;box-shadow:0 4px 18px #12345610;display:flex;flex-direction:column;gap:14px}.test-summary-card .name-cell{font-size:19px}.test-summary-card .desc-cell{color:#5c6577}.test-summary-card .date-info,.test-summary-card .time-info{display:flex;flex-wrap:wrap;gap:8px;font-size:13px}.test-summary-card .actions-cell{border-top:1px solid #e8edf4;padding-top:12px;margin-top:auto}.test-summary-card .action-buttons{display:flex;gap:10px}
+
+.student-live-test {
+  width: 100%;
+  min-width: 0;
+  min-height: 100%;
+  padding: 0;
+}
+
+.student-live-test > .header,
+.student-live-test mat-tab-group {
+  width: 100%;
+  max-width: none;
+}
+
+@media (max-width: 768px) {
+  .student-live-test > .header {
+    padding: 24px 20px;
+  }
+
+  .tab-content {
+    padding: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .student-live-test > .header {
+    padding: 20px 16px;
+  }
+
+  .tab-content {
+    padding: 12px;
+  }
+}
