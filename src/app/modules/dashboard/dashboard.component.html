@@ -157,7 +157,7 @@
         <ng-container *ngFor="let plan of plans()">
           <mat-card class="plan-card" [class.featured]="plan.id === 'combo'">
             <mat-card-header><div class="plan-badge" *ngIf="plan.badge">{{ plan.badge | t:plan.badgeHindi }}</div><mat-card-title>{{ plan.name | t:plan.nameHindi }}</mat-card-title><mat-card-subtitle>{{ plan.subtitle | t:plan.subtitleHindi }}</mat-card-subtitle></mat-card-header>
-            <mat-card-content><div class="plan-price"><span class="price">₹{{ plan.totalAmount | number:'1.0-0' }}</span><span>{{ plan.duration | t:plan.durationHindi }}</span></div><ul class="plan-features"><li *ngFor="let feature of plan.features; let i = index"><mat-icon>check</mat-icon>{{ feature | t:plan.featuresHindi?.[i] }}</li></ul></mat-card-content>
+            <mat-card-content><div class="plan-price"><div class="price-label"><mat-icon>payments</mat-icon><span>{{ 'Plan Price' | t }}</span></div><div class="price-main"><span class="currency">₹</span><span class="price">{{ plan.totalAmount | number:'1.0-0' }}</span></div><span class="price-duration">{{ plan.duration | t:plan.durationHindi }}</span></div><ul class="plan-features"><li *ngFor="let feature of plan.features; let i = index"><mat-icon>check</mat-icon>{{ feature | t:plan.featuresHindi?.[i] }}</li></ul></mat-card-content>
             <mat-card-actions><button mat-raised-button color="primary" (click)="openPaymentDialog(plan.id)">{{ (currentUser()?.type === 'fresh' ? 'Choose plan' : 'Upgrade Plan') | t }}</button></mat-card-actions>
           </mat-card>
         </ng-container>

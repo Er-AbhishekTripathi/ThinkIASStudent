@@ -31,6 +31,8 @@ interface User {
   createdAt: string;
   updatedAt: string;
   __v: number;
+  image?: string | null;
+  profileImage?: string | null;
 }
 
 @Component({
@@ -204,6 +206,24 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewChecked {
       return (names[0][0] + names[names.length - 1][0]).toUpperCase();
     }
     return user.fullName[0].toUpperCase();
+  }
+
+  getProfileImage(): string | null {
+    const user = this.getCurrentUser();
+    const image = user?.profileImage || user?.image;
+    if (!image || image === this.failedProfileImage) return null;
+
+    if (/^(https?:|data:)/i.test(image)) return image;
+    if (image.startsWith('//')) return `${window.location.protocol}${image}`;
+    if (image.startsWith('/')) return `${window.location.origin}${image}`;
+    return image;
+  }
+
+  private failedProfileImage: string | null = null;
+
+  onProfileImageError(): void {
+    const image = this.getCurrentUser()?.profileImage || this.getCurrentUser()?.image;
+    this.failedProfileImage = image || null;
   }
 
   // Toggle profile dropdown

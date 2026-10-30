@@ -63,7 +63,11 @@
           <div class="user-profile-badge" 
                (click)="toggleProfileDropdown()">
             <div class="user-avatar">
-              {{ getUserInitials() }}
+              <img *ngIf="getProfileImage(); else avatarInitials"
+                   [src]="getProfileImage()"
+                   alt="Profile"
+                   (error)="onProfileImageError()" />
+              <ng-template #avatarInitials>{{ getUserInitials() }}</ng-template>
             </div>
             <div class="user-info" *ngIf="getCurrentUser() as user">
               <div class="user-name">{{ user.fullName }}</div>

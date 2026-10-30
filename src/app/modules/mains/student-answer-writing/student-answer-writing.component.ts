@@ -1,4 +1,4 @@
-import { Component, inject, signal, OnInit, ViewChild, TemplateRef } from '@angular/core';
+import { Component, inject, signal, OnInit, OnDestroy, ViewChild, TemplateRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
@@ -37,6 +37,7 @@ import { AnswerWritingService, AnswerWriting, AnswerSubmission } from '../../../
       <div class="header">
   <div class="header-top">
     <div class="header-title">
+      <span class="answer-writing-eyebrow">ANSWER WRITING PROGRESS</span>
       <h1>
         <i class="fas fa-pen-fancy"></i> 
         {{ isHindiMode ? 'मेन्स दैनिक उत्तर लेखन' : 'Mains Daily Answer Writing' }}
@@ -79,10 +80,10 @@ import { AnswerWritingService, AnswerWriting, AnswerSubmission } from '../../../
                 <tbody>
                   <tr *ngFor="let exercise of availableExercises()">
                     <td class="name-cell">
-                      <strong>{{ isHindiMode ? (exercise.nameHi || exercise.name) : exercise.name }}</strong>
+                      <strong>{{ localized(exercise.name, exercise.nameHi) }}</strong>
                     </td>
                     <td class="desc-cell">
-                      {{ isHindiMode ? (exercise.descriptionHi || exercise.description) : exercise.description | slice:0:60 }}{{ (isHindiMode ? (exercise.descriptionHi || exercise.description) : exercise.description).length > 60 ? '...' : '' }}
+                      {{ localized(exercise.description, exercise.descriptionHi) | slice:0:60 }}{{ localized(exercise.description, exercise.descriptionHi).length > 60 ? '...' : '' }}
                     </td>
                     <td class="date-cell">
                       <div class="date-info">
@@ -166,7 +167,7 @@ import { AnswerWritingService, AnswerWriting, AnswerSubmission } from '../../../
                 <tbody>
                   <tr *ngFor="let submission of mySubmissions()">
                     <td class="name-cell">
-                      <strong>{{ isHindiMode ? (submission.answerWritingId?.nameHi || submission.answerWritingId?.name) : submission.answerWritingId?.name }}</strong>
+                      <strong>{{ localized(submission.answerWritingId?.name, submission.answerWritingId?.nameHi) }}</strong>
                     </td>
                     <td>{{ submission.submittedAt | date:'dd MMM yyyy, hh:mm a' }}</td>
                     <td>
@@ -197,14 +198,14 @@ import { AnswerWritingService, AnswerWriting, AnswerSubmission } from '../../../
     <ng-template #submissionDetailsModal>
       <div class="modal-container" *ngIf="selectedSubmission">
         <div class="modal-header">
-          <h2>{{ isHindiMode ? (selectedSubmission.answerWritingId?.nameHi || selectedSubmission.answerWritingId?.name) : selectedSubmission.answerWritingId?.name }}</h2>
+          <h2>{{ localized(selectedSubmission.answerWritingId?.name, selectedSubmission.answerWritingId?.nameHi) }}</h2>
           <button class="close-btn" (click)="closeSubmissionDetailsModal()">×</button>
         </div>
         <div class="modal-body">
           <!-- Description -->
           <div class="info-section">
             <h4>{{ isHindiMode ? 'विवरण:' : 'Description:' }}</h4>
-            <p>{{ isHindiMode ? (selectedSubmission.answerWritingId?.descriptionHi || selectedSubmission.answerWritingId?.description) : selectedSubmission.answerWritingId?.description }}</p>
+            <p>{{ localized(selectedSubmission.answerWritingId?.description, selectedSubmission.answerWritingId?.descriptionHi) }}</p>
           </div>
 
           <!-- Questions and Answers -->
@@ -259,7 +260,7 @@ import { AnswerWritingService, AnswerWriting, AnswerSubmission } from '../../../
 <ng-template #submissionModal>
   <div class="modal-container">
     <div class="modal-header">
-      <h2>{{ selectedExercise?.name }}/{{ selectedExercise?.nameHi }}</h2>
+      <h2>{{ selectedExercise ? localized(selectedExercise.name, selectedExercise.nameHi) : '' }}</h2>
       <button class="close-btn" (click)="closeSubmissionModal()">×</button>
     </div>
     <div class="modal-body">
@@ -327,7 +328,7 @@ import { AnswerWritingService, AnswerWriting, AnswerSubmission } from '../../../
         <div class="modal-body">
           <div *ngFor="let q of currentQuestions; let i = index" class="question-item-modal">
             <div class="q-num">{{ i + 1 }}.</div>
-            <div class="q-text">{{ isHindiMode ? (q.questionTextHi || q.questionText) : q.questionText }}</div>
+            <div class="q-text">{{ localized(q.questionText, q.questionTextHi) }}</div>
           </div>
         </div>
       </div>
@@ -335,7 +336,7 @@ import { AnswerWritingService, AnswerWriting, AnswerSubmission } from '../../../
   `,
   styleUrls: ['./student-answer-writing.component.css']
 })
-export class StudentAnswerWritingComponent implements OnInit {
+export class StudentAnswerWritingComponent implements OnInit, OnDestroy {
   @ViewChild('questionsDialog') questionsDialog!: TemplateRef<any>;
   @ViewChild('submissionModal') submissionModal!: TemplateRef<any>;
     @ViewChild('submissionDetailsModal') submissionDetailsModal!: TemplateRef<any>;
@@ -362,14 +363,38 @@ export class StudentAnswerWritingComponent implements OnInit {
   private questionsDialogRef: any;
 
   ngOnInit() {
+    this.isHindiMode = localStorage.getItem('preferredLanguage') === 'hi';
     this.loadAvailableExercises();
     this.loadMySubmissions();
+    window.addEventListener('preferredLanguageChanged', this.handleLanguageChange);
+  }
+
+  ngOnDestroy() {
+    window.removeEventListener('preferredLanguageChanged', this.handleLanguageChange);
   }
 
   toggleLanguage(isHindi: boolean) {
     this.isHindiMode = isHindi;
+    localStorage.setItem('preferredLanguage', isHindi ? 'hi' : 'en');
+    document.documentElement.lang = isHindi ? 'hi' : 'en';
+    window.dispatchEvent(new CustomEvent('preferredLanguageChanged', { detail: isHindi ? 'hi' : 'en' }));
     this.loadAvailableExercises();
     this.loadMySubmissions();
+  }
+
+  private handleLanguageChange = (event: Event) => {
+    const language = (event as CustomEvent).detail;
+    const isHindi = language === 'hi';
+    if (this.isHindiMode !== isHindi) {
+      this.isHindiMode = isHindi;
+      this.loadAvailableExercises();
+      this.loadMySubmissions();
+    }
+  };
+
+  localized(english: any, hindi: any): string {
+    const value = this.isHindiMode ? hindi : english;
+    return typeof value === 'string' ? value.trim() : '';
   }
 
   // getStatusText(exercise: AnswerWriting): string {
@@ -428,7 +453,7 @@ export class StudentAnswerWritingComponent implements OnInit {
       this.snackBar.open(this.isHindiMode ? 'अभ्यास अवधि में ही डाउनलोड कर सकते हैं' : 'Only available during exercise period', 'Close', { duration: 3000 });
       return;
     }
-    const url = this.isHindiMode && exercise.questionPaperPDFHi ? exercise.questionPaperPDFHi : exercise.questionPaperPDF;
+    const url = this.isHindiMode ? exercise.questionPaperPDFHi : exercise.questionPaperPDF;
     if (url) window.open(url, '_blank');
     else this.snackBar.open(this.isHindiMode ? 'PDF उपलब्ध नहीं' : 'PDF not available', 'Close', { duration: 3000 });
   }
@@ -598,7 +623,7 @@ getUpcomingMessage(exercise: any): string {
   }
   
   if (question) {
-    return this.isHindiMode ? (question.questionTextHi || question.questionText) : question.questionText;
+    return this.localized(question.questionText, question.questionTextHi);
   }
   
   return this.isHindiMode ? 'प्रश्न नहीं मिला' : 'Question not found';

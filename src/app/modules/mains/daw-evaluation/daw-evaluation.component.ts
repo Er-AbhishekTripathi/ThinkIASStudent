@@ -133,7 +133,19 @@ interface EvaluationItem {
       </div>
 
       <!-- Evaluations List -->
-      <div *ngIf="!isLoading && evaluations().length > 0" class="evaluations-grid">
+      <div class="results-section-tabs" *ngIf="!isLoading && evaluations().length > 0">
+        <button type="button" [class.active]="activeSection === 'results'" (click)="activeSection = 'results'">
+          <i class="fas fa-chart-line"></i>
+          {{ isHindiMode ? 'मूल्यांकन परिणाम' : 'Evaluation Results' }}
+        </button>
+        <button type="button" [class.active]="activeSection === 'modelAnswers'" (click)="activeSection = 'modelAnswers'">
+          <i class="fas fa-file-alt"></i>
+          {{ isHindiMode ? 'मॉडल उत्तर' : 'Model Answer' }}
+          <span>{{ modelAnswersCount }}</span>
+        </button>
+      </div>
+
+      <div *ngIf="!isLoading && evaluations().length > 0 && showResultsSection()" class="evaluations-grid">
         <mat-card 
           *ngFor="let item of evaluations()" 
           class="evaluation-card"
@@ -198,6 +210,35 @@ interface EvaluationItem {
             <button mat-button color="primary" (click)="viewEvaluationDetails(item)">
               <i class="fas fa-eye"></i> 
               {{ isHindiMode ? 'विवरण देखें' : 'View Details' }}
+            </button>
+          </mat-card-actions>
+        </mat-card>
+      </div>
+
+      <div *ngIf="!isLoading && evaluations().length > 0 && showModelAnswersSection()" class="model-answer-grid">
+        <mat-card *ngFor="let item of evaluationsWithModelAnswers" class="model-answer-card">
+          <mat-card-header>
+            <mat-card-title>{{ isHindiMode ? (item.exercise.nameHi || item.exercise.name) : item.exercise.name }}</mat-card-title>
+            <mat-card-subtitle>{{ item.exercise.startDateTime | date:'MMM d, y' }}</mat-card-subtitle>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="model-answer-card-preview" *ngIf="isHindiMode ? item.modelAnswer?.answerHindi : item.modelAnswer?.answerEnglish">
+              {{ isHindiMode ? item.modelAnswer?.answerHindi : item.modelAnswer?.answerEnglish }}
+            </div>
+            <div class="model-answer-card-preview model-answer-pdf-only" *ngIf="!(isHindiMode ? item.modelAnswer?.answerHindi : item.modelAnswer?.answerEnglish) && (isHindiMode ? item.modelAnswer?.modelAnswerPDFHi : item.modelAnswer?.modelAnswerPDF)">
+              <i class="fas fa-file-pdf"></i>
+              {{ isHindiMode ? 'मॉडल उत्तर PDF उपलब्ध है' : 'Model Answer PDF available' }}
+            </div>
+          </mat-card-content>
+          <mat-card-actions align="end">
+            <a mat-button color="primary"
+               *ngIf="isHindiMode ? item.modelAnswer?.modelAnswerPDFHi : item.modelAnswer?.modelAnswerPDF"
+               [href]="isHindiMode ? item.modelAnswer?.modelAnswerPDFHi : item.modelAnswer?.modelAnswerPDF"
+               target="_blank">
+              <i class="fas fa-download"></i> PDF
+            </a>
+            <button mat-button color="primary" (click)="viewEvaluationDetails(item)">
+              <i class="fas fa-eye"></i> {{ isHindiMode ? 'पूरा उत्तर देखें' : 'View Model Answer' }}
             </button>
           </mat-card-actions>
         </mat-card>
@@ -400,6 +441,23 @@ export class DawEvaluationComponent implements OnInit {
   isHindiMode = false;
   selectedEvaluation: EvaluationItem | null = null;
   private detailsDialogRef: any;
+  activeSection: 'results' | 'modelAnswers' = 'results';
+
+  get evaluationsWithModelAnswers(): EvaluationItem[] {
+    return this.evaluations().filter(item => !!item.modelAnswer);
+  }
+
+  get modelAnswersCount(): number {
+    return this.evaluationsWithModelAnswers.length;
+  }
+
+  showResultsSection(): boolean {
+    return this.activeSection === 'results';
+  }
+
+  showModelAnswersSection(): boolean {
+    return this.activeSection === 'modelAnswers';
+  }
 
   ngOnInit() {
     this.loadEvaluations();

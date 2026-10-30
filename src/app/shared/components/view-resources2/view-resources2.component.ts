@@ -49,7 +49,9 @@ export class ViewResources2Component implements OnInit {
     'gs3': 'gs3-analysis',
     'gs4': 'gs4-analysis',
     'essay': 'essay-analysis',
-    'optional': 'optional-subjects'
+    'optional': 'optional-subjects',
+    'qualifying': 'qualifying-paper',
+    'qualifying-paper': 'qualifying-paper'
   };
   
   videoCategoryMap: { [key: string]: string } = {
@@ -60,6 +62,7 @@ export class ViewResources2Component implements OnInit {
     'gs3': 'gs3-videos',
     'gs4': 'gs4-videos',
     'essay': 'essay-videos',
+    'qualifying': 'qualifying-paper-videos',
     'optional': 'strategy-sessions',
     'strategy': 'strategy-sessions',
     'current': 'current-affairs',
@@ -206,6 +209,7 @@ export class ViewResources2Component implements OnInit {
       'gs4-analysis': 'GS Paper 4 Analysis',
       'essay-analysis': 'Essay Paper Analysis',
       'optional-subjects': 'Optional Subjects',
+      'qualifying-paper': 'Qualifying Paper',
       'prelims': 'Prelims Analysis',
       'prelims-paper-1': 'Prelims Paper-I',
       'prelims-paper-2': 'Prelims Paper-II',
@@ -217,6 +221,7 @@ export class ViewResources2Component implements OnInit {
       'gs3-videos': 'GS Paper 3 Videos',
       'gs4-videos': 'GS Paper 4 Videos',
       'essay-videos': 'Essay Writing Videos',
+      'qualifying-paper-videos': 'Qualifying Paper Videos',
       'strategy-sessions': 'Strategy Sessions',
       'current-affairs': 'Current Affairs',
       'mock-interviews': 'Mock Interviews'
