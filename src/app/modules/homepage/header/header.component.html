@@ -80,15 +80,8 @@
                         <li (click)="scrollToSection('guidence')"><a href="javascript:void(0)" class="en">Objective</a><a
                             href="javascript:void(0)" class="hi">उद्देश्य</a></li>
 
-                        <li class="dropdown position-relative">
-                            <a class="dropdown-toggle en" href="#" (click)="$event.preventDefault()" data-bs-toggle="dropdown">Syllabus</a>
-                            <a class="dropdown-toggle hi" href="#" (click)="$event.preventDefault()" data-bs-toggle="dropdown">पाठ्यक्रम</a>
-                            <div class="dropdown-menu">
-                                <a class="dropdown-item" (click)="openSyllabus('prelims')">{{ currentLanguage==='hi' ? 'प्रीलिम्स पाठ्यक्रम' : 'Prelims Syllabus' }}</a>
-                                <a class="dropdown-item" (click)="openSyllabus('mains')">{{ currentLanguage==='hi' ? 'मेन्स पाठ्यक्रम' : 'Mains Syllabus' }}</a>
-                                <a class="dropdown-item" (click)="scrollToSection('materials')">{{ currentLanguage==='hi' ? 'वैकल्पिक विषय' : 'Optional Subjects' }}</a>
-                            </div>
-                        </li>
+                        <li (click)="scrollToSection('materials')"><a href="javascript:void(0)" class="en">Syllabus</a><a
+                            href="javascript:void(0)" class="hi">पाठ्यक्रम</a></li>
 
                         <li class="dropdown position-relative exam-journey-item">
                             <a class="dropdown-toggle en" href="#" (click)="$event.preventDefault()" data-bs-toggle="dropdown">Exam Journey</a>
@@ -193,14 +186,9 @@
             <a class="d-block py-2 hi" [class.hide]="currentLanguage !== 'hi'">उद्देश्य</a>
         </li>
 
-        <li class="mobile-dropdown">
-            <a class="d-block py-2 en" [class.hide]="currentLanguage !== 'en'" (click)="toggleMobileDropdown('syllabus')">Syllabus</a>
-            <a class="d-block py-2 hi" [class.hide]="currentLanguage !== 'hi'" (click)="toggleMobileDropdown('syllabus')">पाठ्यक्रम</a>
-            <div class="mobile-dropdown-content" [class.show]="activeMobileDropdown === 'syllabus'">
-                <a class="d-block py-2 ps-4" (click)="openSyllabus('prelims'); closeMobileMenu()">{{ currentLanguage==='hi' ? 'प्रीलिम्स पाठ्यक्रम' : 'Prelims Syllabus' }}</a>
-                <a class="d-block py-2 ps-4" (click)="openSyllabus('mains'); closeMobileMenu()">{{ currentLanguage==='hi' ? 'मेन्स पाठ्यक्रम' : 'Mains Syllabus' }}</a>
-                <a class="d-block py-2 ps-4" (click)="scrollToSection('materials'); closeMobileMenu()">{{ currentLanguage==='hi' ? 'वैकल्पिक विषय' : 'Optional Subjects' }}</a>
-            </div>
+        <li (click)="scrollToSection('materials'); closeMobileMenu()">
+            <a class="d-block py-2 en" [class.hide]="currentLanguage !== 'en'">Syllabus</a>
+            <a class="d-block py-2 hi" [class.hide]="currentLanguage !== 'hi'">पाठ्यक्रम</a>
         </li>
 
         <li>

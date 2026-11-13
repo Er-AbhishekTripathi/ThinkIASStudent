@@ -28,6 +28,45 @@ export function filterUpcomingTests(tests: Test[], now = Date.now()): Test[] {
   });
 }
 
+export function isTestSeriesClosed(endDate: string | Date | null | undefined, now = Date.now()): boolean {
+  if (!endDate) return false;
+
+  const seriesEndDate = typeof endDate === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(endDate)
+    ? new Date(`${endDate}T00:00:00`)
+    : new Date(endDate);
+  const today = new Date(now);
+
+  return Number.isFinite(seriesEndDate.getTime()) &&
+    (seriesEndDate.getFullYear() < today.getFullYear() ||
+      (seriesEndDate.getFullYear() === today.getFullYear() && seriesEndDate.getMonth() < today.getMonth()) ||
+      (seriesEndDate.getFullYear() === today.getFullYear() && seriesEndDate.getMonth() === today.getMonth() &&
+        seriesEndDate.getDate() < today.getDate()));
+}
+
+export function getSeriesExamStatus(
+  exam: { startTime?: string | Date; seriesEndDate?: string | Date; window?: { canTake?: boolean } },
+  now = Date.now()
+): 'Closed' | 'Available' | 'Upcoming' | 'Open' {
+  if (isTestSeriesClosed(exam.seriesEndDate, now)) return 'Closed';
+  if (exam.window?.canTake) return 'Available';
+  if (exam.startTime && new Date(exam.startTime).getTime() > now) return 'Upcoming';
+  return 'Open';
+}
+
+export function formatExamCountdown(startTime: string | Date, now = Date.now()): string {
+  const start = new Date(startTime).getTime();
+  if (!Number.isFinite(start)) return '00:00:00';
+
+  const totalSeconds = Math.ceil(Math.max(0, start - now) / 1000);
+  const days = Math.floor(totalSeconds / 86400);
+  const hours = Math.floor((totalSeconds % 86400) / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+  const time = [hours, minutes, seconds].map(value => String(value).padStart(2, '0')).join(':');
+
+  return days ? `${days}d ${time}` : time;
+}
+
 @Component({
   selector: 'app-dashboard',
   standalone: true,
@@ -73,6 +112,21 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
   @ViewChild('performanceChart') performanceChart?: ElementRef<HTMLCanvasElement>;
   private performanceChartInstance: Chart | null = null;
   private liveTimer: ReturnType<typeof setInterval> | null = null;
+
+  examStatus(exam: { startTime?: string | Date; seriesEndDate?: string | Date; window?: { canTake?: boolean } }): string {
+    return getSeriesExamStatus(exam);
+  }
+
+  examCountdown(exam: { startTime: string | Date }): string {
+    this.liveClock();
+    return formatExamCountdown(exam.startTime);
+  }
+
+  private startLiveClock() {
+    if (!this.liveTimer) {
+      this.liveTimer = setInterval(() => this.liveClock.update(value => value + 1), 1000);
+    }
+  }
 
   ngOnInit() {
     this.planService.getPlans().subscribe({ next: plans => this.plans.set(plans), error: error => console.error('Error loading plans:', error) });
@@ -189,9 +243,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
       next: (response) => {
         const tests = (response.data || []).filter((test) => test.status !== 'expired').slice(0, 3);
         this.liveTests.set(tests);
-        if (!this.liveTimer) {
-          this.liveTimer = setInterval(() => this.liveClock.update((value) => value + 1), 1000);
-        }
+        this.startLiveClock();
       },
       error: (error) => console.error('Error loading live tests:', error)
     });
@@ -207,6 +259,8 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
             .map((slot: any) => ({
               ...slot,
               seriesName: series.name,
+              seriesStartDate: series.startDate,
+              seriesEndDate: series.endDate,
               examTitle: slot.exam.title || series.name,
               startTime: slot.exam.startTime || slot.date,
               duration: slot.exam.duration || slot.duration
@@ -221,6 +275,9 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
           return firstUpcoming ? firstTime - secondTime : secondTime - firstTime;
         });
         (kind === 'pre' ? this.prelimsExams : this.mainsExams).set(exams);
+        if (exams.some((exam: any) => this.examStatus(exam) === 'Upcoming')) {
+          this.startLiveClock();
+        }
       },
       error: error => console.error(`Error loading ${kind} series exams:`, error)
     });

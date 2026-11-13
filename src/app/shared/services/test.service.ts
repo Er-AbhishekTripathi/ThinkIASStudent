@@ -238,6 +238,10 @@ export class TestService {
     return this.http.get<Test[]>(`${this.apiUrl}/tests`);
   }
 
+  getMainsTests(): Observable<Test[]> {
+    return this.http.get<Test[]>(`${this.apiUrl}/tests`, { params: { kind: 'mains' } });
+  }
+
   getTestById(id: string): Observable<Test> {
     return this.http.get<Test>(`${this.apiUrl}/tests/${id}`);
   }

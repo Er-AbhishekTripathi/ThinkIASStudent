@@ -181,17 +181,6 @@ export class HeaderComponent implements OnInit, AfterViewInit, OnDestroy {
     this.selectedMegaExam = exam;
   }
 
-  openSyllabus(type: string): void {
-    this.dialog.open(ResourcesViewComponent, {
-      data: { type },
-      width: 'calc(100vw - 40px)',
-      height: 'calc(100vh - 40px)',
-      maxWidth: '1200px',
-      maxHeight: '600px',
-      panelClass: 'resources-dialog-container'
-    });
-  }
-
   private loadCatalog(): void {
     this.http.get<any>(environment.apiUrl + '/exams').subscribe({
       next: (response) => {

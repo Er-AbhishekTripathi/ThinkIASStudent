@@ -81,6 +81,10 @@ export class LoginComponent {
 
     error: (error) => {
       this.loading.set(false);
+      if (error?.error?.code === 'ACCOUNT_BLOCKED') {
+        this.snackBar.open(error.error.message || 'You have been blocked from accessing your account. Please contact the administrator.', 'Close', { duration: 6000 });
+        return;
+      }
       if (error?.error?.code === 'ACCOUNT_INACTIVE') { this.dialog.open(this.inactiveDialog, {width: '440px', maxWidth: '95vw'}); return; }
       this.snackBar.open(
         error?.error?.message || 'Login failed',

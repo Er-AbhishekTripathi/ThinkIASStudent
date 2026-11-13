@@ -1,7 +1,7 @@
 
 import { Component, inject, signal, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatTableModule } from '@angular/material/table';
@@ -47,6 +47,7 @@ export class LiveTestsComponent implements OnInit, OnDestroy {
   private dialog = inject(MatDialog);
   private snackBar = inject(MatSnackBar);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
 
   tests = signal<any[]>([]);
   now = Date.now();
@@ -81,6 +82,7 @@ export class LiveTestsComponent implements OnInit, OnDestroy {
   loading = signal(false);
   pdfDownloading = signal<string | null>(null);
   isAdmin = this.authService.currentUser()?.role === 'admin';
+  testKind = this.route.snapshot.data['testKind'] === 'mains' ? 'mains' : 'pre';
 
   // Rules modal state
   showRulesModal = false;
@@ -150,7 +152,10 @@ export class LiveTestsComponent implements OnInit, OnDestroy {
         }
       });
     } else {
-      this.testService.getUpcomingTests().subscribe({
+      const tests$ = this.testKind === 'mains'
+        ? this.testService.getMainsTests()
+        : this.testService.getUpcomingTests();
+      tests$.subscribe({
         next: (tests) => {
           this.tests.set(tests);
           this.loading.set(false);

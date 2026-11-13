@@ -4,7 +4,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { Router } from '@angular/router';
 import { of } from 'rxjs';
 
-import { DashboardComponent, filterUpcomingTests } from './dashboard.component';
+import { DashboardComponent, filterUpcomingTests, formatExamCountdown, getSeriesExamStatus, isTestSeriesClosed } from './dashboard.component';
 import { AuthService } from '../../shared/services/auth.service';
 import { LiveTestService } from '../../shared/services/live-test.service';
 import { PublicPlanService } from '../../shared/services/public-plan.service';
@@ -61,5 +61,43 @@ describe('filterUpcomingTests', () => {
     ];
 
     expect(filterUpcomingTests(tests, now).map(test => test._id)).toEqual(['reopened']);
+  });
+});
+
+describe('Test Series status', () => {
+  const today = new Date(2026, 9, 8, 12).getTime();
+
+  it('closes the series only after its end date', () => {
+    expect(isTestSeriesClosed(new Date(2026, 9, 7, 23, 59), today)).toBeTrue();
+    expect(isTestSeriesClosed('2026-10-08', today)).toBeFalse();
+    expect(isTestSeriesClosed(new Date(2026, 9, 9), today)).toBeFalse();
+  });
+
+  it('keeps a series open between tests while opening scheduled tests at their configured time', () => {
+    const exam = { startTime: new Date(2026, 9, 7, 9), seriesEndDate: new Date(2026, 9, 10), window: { canTake: false } };
+    expect(getSeriesExamStatus(exam, today)).toBe('Open');
+    expect(getSeriesExamStatus({ ...exam, startTime: new Date(2026, 9, 8, 13) }, today)).toBe('Upcoming');
+    expect(getSeriesExamStatus({ ...exam, window: { canTake: true } }, today)).toBe('Available');
+  });
+
+  it('does not mark a test available after the series end date', () => {
+    expect(getSeriesExamStatus({
+      startTime: new Date(2026, 9, 8, 9),
+      seriesEndDate: new Date(2026, 9, 7),
+      window: { canTake: true }
+    }, today)).toBe('Closed');
+  });
+});
+
+describe('formatExamCountdown', () => {
+  const now = new Date(2026, 9, 8, 12).getTime();
+
+  it('formats the remaining time until the scheduled start', () => {
+    expect(formatExamCountdown(new Date(2026, 9, 8, 13, 5, 9), now)).toBe('01:05:09');
+    expect(formatExamCountdown(new Date(2026, 9, 10, 14), now)).toBe('2d 02:00:00');
+  });
+
+  it('does not show negative time after the start', () => {
+    expect(formatExamCountdown(new Date(now - 1000), now)).toBe('00:00:00');
   });
 });

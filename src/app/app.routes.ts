@@ -58,6 +58,12 @@ export const routes: Routes = [
     canActivate: [authGuard, roleGuard],
     data: { role: 'student', plan: 'pre' }
   },
+  {
+    path: 'mains-tests',
+    loadComponent: () => import('./modules/tests/live-tests/live-tests.component').then(m => m.LiveTestsComponent),
+    canActivate: [authGuard, roleGuard],
+    data: { role: 'student', plan: 'mains', testKind: 'mains' }
+  },
   { 
     path: 'manage-tests', 
     loadComponent: () => import('./modules/tests/live-tests/live-tests.component').then(m => m.LiveTestsComponent),

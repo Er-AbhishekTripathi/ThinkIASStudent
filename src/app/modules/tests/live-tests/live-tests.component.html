@@ -1,16 +1,9 @@
 
-<div class="live-tests-container">
+<div class="live-tests-container" [class.mains-page]="testKind === 'mains'">
   <div class="header">
     <div class="header-copy">
-      <span class="page-eyebrow">{{ isAdmin ? 'TEST ADMINISTRATION' : 'PRELIMS PREPARATION' }}</span>
-      <h1>{{ isAdmin ? 'Manage Tests' : 'Prelims Tests' }}</h1>
-      <p>{{ isAdmin ? 'Create, review and manage your test library.' : 'Build speed and confidence with focused practice.' }}</p>
-      <div class="header-stats" *ngIf="!isAdmin">
-        <span><strong>{{ tests().length }}</strong> available tests</span>
-        <span><strong>{{ completedTestsCount }}</strong> completed</span>
-      </div>
+      <h1>{{ isAdmin ? 'Manage Tests' : (testKind === 'mains' ? 'Mains Test' : 'Prelims Tests') }}</h1>
     </div>
-    <div class="header-mark"><mat-icon>bolt</mat-icon></div>
     <button *ngIf="isAdmin" mat-raised-button color="primary" (click)="openCreateTestDialog()">
       <mat-icon>add</mat-icon>
       Create Test
@@ -64,7 +57,7 @@
     <p>Loading tests...</p>
   </div>
 
-  <div class="tests-grid" *ngIf="!loading() && tests().length > 0">
+  <div class="tests-grid" *ngIf="!loading() && filteredTests.length > 0">
     <mat-card *ngFor="let test of filteredTests" class="test-card">
       <div class="card-accent"></div>
           <mat-card-header>
@@ -84,7 +77,7 @@
         </mat-card-subtitle>
       </mat-card-header>
       <mat-card-content>
-        <div class="description" [innerHTML]="test.description || 'Focused practice set for your prelims preparation.'"></div>
+        <div class="description" [innerHTML]="test.description || (testKind === 'mains' ? 'Focused practice set for your mains preparation.' : 'Focused practice set for your prelims preparation.')"></div>
         <div class="test-meta">
           <span><mat-icon>quiz</mat-icon><b>{{ test.questionUids?.length || test.totalQuestions }}</b> Questions</span>
           <span><mat-icon>emoji_events</mat-icon><b>{{ (test.marksPerQuestion * test.questionUids?.length) || (test.marksPerQuestion * test.totalQuestions)}}</b> Marks</span>

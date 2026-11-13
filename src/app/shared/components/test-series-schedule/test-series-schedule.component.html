@@ -1,0 +1,86 @@
+<section class="schedule-page">
+<header class="schedule-hero">
+<div>
+<span class="eyebrow">{{ kind === 'pre' ? 'PRELIMS PREPARATION' : 'MAINS PREPARATION' }}</span>
+<h1>{{ (kind === 'pre' ? 'Prelims Test Series' : 'Mains Test Series') | t }}</h1>
+<p>{{ kind === 'pre' ? 'Attempt scheduled papers, track countdown and review results.' : 'Attempt scheduled papers, track countdown and review results.' }}</p>
+</div>
+<div class="hero-mark">
+<i class="fas" [class.fa-bolt]="kind === 'pre'" [class.fa-pen-nib]="kind === 'mains'">
+</i>
+</div>
+</header>
+<div class="schedule-toolbar">
+<label>
+<span>{{'Search test series' | t}}</span>
+<input aria-label="Search series" placeholder="Search test series" [(ngModel)]="search">
+</label>
+<label>
+<span>{{'Status' | t}}</span>
+<select aria-label="Filter series" [(ngModel)]="status">
+<option value="all">All series</option>
+<option value="upcoming">Upcoming</option>
+<option value="available">Available</option>
+<option value="completed">Completed</option>
+</select>
+</label>
+<strong>{{filtered.length}} series</strong>
+</div>
+<div class="schedule-state" *ngIf="loading">
+<span class="spinner">
+</span>Loading test series...</div>
+<div class="schedule-state error" role="alert" *ngIf="error">{{error}}</div>
+<div class="schedule-state" *ngIf="!loading && !error && !filtered.length">
+<i class="fas fa-calendar-xmark">
+</i>
+<h2>No test series found</h2>
+<p>Try another search or status filter.</p>
+</div>
+<div class="series-grid" *ngIf="!loading && !error && filtered.length">
+<article *ngFor="let item of filtered">
+<div class="card-top">
+<span class="badge" [class]="state(item)">{{state(item)}}</span>
+<span class="test-count">
+<i class="fas fa-layer-group">
+</i> {{item.testDates.length}} tests</span>
+</div>
+<h2>{{seriesText(item, 'name')}}</h2>
+<p class="description">{{seriesText(item, 'description')}}</p>
+<div class="date-range">
+<i class="fas fa-calendar-days">
+</i>
+<span>{{item.startDate | date:'dd MMM yyyy'}}<b>to</b>{{item.endDate | date:'dd MMM yyyy'}}</span>
+</div>
+<details *ngIf="seriesText(item, 'intro')">
+<summary>{{'Introduction' | t}} <i class="fas fa-chevron-down">
+</i>
+</summary>
+<p class="intro">{{seriesText(item, 'intro')}}</p>
+</details>
+<ul class="exam-list">
+<li *ngFor="let test of item.testDates" [class.today]="isToday(test)">
+<div>
+<strong>{{testTitle(test) || (test.date | date:'dd MMM yyyy')}}</strong>
+<span class="today-tag" *ngIf="isToday(test)">Today</span>
+<small>{{test.date | date:'dd MMM yyyy'}} · {{test.time}} · {{test.duration}} minutes</small>
+<small class="countdown" *ngIf="!test.result && waiting(test)">Starts in {{countdown(slotStart(test))}}</small>
+<small *ngIf="test.result">Score {{test.result.score}}/{{test.result.totalMarks}} ({{test.result.percentage | number:'1.0-1'}}%)</small>
+</div>
+<div class="exam-actions">
+<button *ngIf="test.result" type="button" class="view-result" (click)="viewResult(test)">
+<i class="fas fa-chart-simple">
+</i> View result</button>
+<button *ngIf="!test.result && canStart(test)" type="button" class="start" (click)="startExam(test)">Start exam</button>
+<button *ngIf="!test.result && waiting(test)" type="button" (click)="startExam(test)">Open countdown</button>
+<span *ngIf="!test.result && !waiting(test) && test.exam && !hasQuestions(test)" class="pending-tag">
+<i class="fas fa-hourglass-half">
+</i> Questions not added yet</span>
+<span *ngIf="!test.result && !waiting(test) && !canStart(test) && hasQuestions(test)" class="closed-tag">
+<i class="fas fa-lock">
+</i> Window closed</span>
+</div>
+</li>
+</ul>
+</article>
+</div>
+</section>

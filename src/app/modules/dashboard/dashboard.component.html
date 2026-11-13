@@ -26,9 +26,14 @@
           <div class="dashboard-exam-list" *ngIf="prelimsExams().length; else noPrelimsExams">
             <article class="dashboard-exam-row" *ngFor="let exam of prelimsExams().slice(0, 3)">
               <span class="exam-type-icon prelims-icon"><mat-icon>event</mat-icon></span>
-              <span class="dashboard-exam-copy"><strong>{{ exam.examTitle }}</strong><small>{{ exam.startTime | date:'dd MMM yyyy, hh:mm a' }} · {{ exam.duration }} min</small></span>
+              <span class="dashboard-exam-copy">
+                <strong>{{ exam.examTitle }}</strong>
+                <small class="exam-schedule">{{ exam.startTime | date:'dd MMM yyyy, hh:mm a' }} <span aria-hidden="true">·</span> {{ exam.duration }} min</small>
+                <small class="series-date-range"><mat-icon aria-hidden="true">date_range</mat-icon><span>{{ 'Series' | t }}: {{ exam.seriesStartDate | date:'dd MMM yyyy' }} – {{ exam.seriesEndDate | date:'dd MMM yyyy' }}</span></small>
+              </span>
               <span class="dashboard-exam-result" *ngIf="exam.result"><strong>{{ exam.result.score }}/{{ exam.result.totalMarks }}</strong><small>{{ 'Submitted' | t }}</small></span>
-              <span class="dashboard-exam-state" *ngIf="!exam.result">{{ exam.window?.canTake ? ('Available' | t) : ('Upcoming' | t) }}</span>
+              <span class="dashboard-exam-state upcoming exam-countdown" *ngIf="!exam.result && examStatus(exam) === 'Upcoming'"><mat-icon aria-hidden="true">timer</mat-icon><span>{{ 'Starts in' | t }} {{ examCountdown(exam) }}</span></span>
+              <span class="dashboard-exam-state" [class.closed]="examStatus(exam) === 'Closed'" [class.available]="examStatus(exam) === 'Available'" *ngIf="!exam.result && examStatus(exam) !== 'Upcoming'">{{ examStatus(exam) | t }}</span>
             </article>
           </div>
           <ng-template #noPrelimsExams><p class="no-dashboard-exams">{{ 'No scheduled exams yet.' | t }}</p></ng-template>
@@ -45,9 +50,14 @@
           <div class="dashboard-exam-list" *ngIf="mainsExams().length; else noMainsExams">
             <article class="dashboard-exam-row" *ngFor="let exam of mainsExams().slice(0, 3)">
               <span class="exam-type-icon mains-icon"><mat-icon>event</mat-icon></span>
-              <span class="dashboard-exam-copy"><strong>{{ exam.examTitle }}</strong><small>{{ exam.startTime | date:'dd MMM yyyy, hh:mm a' }} · {{ exam.duration }} min</small></span>
+              <span class="dashboard-exam-copy">
+                <strong>{{ exam.examTitle }}</strong>
+                <small class="exam-schedule">{{ exam.startTime | date:'dd MMM yyyy, hh:mm a' }} <span aria-hidden="true">·</span> {{ exam.duration }} min</small>
+                <small class="series-date-range"><mat-icon aria-hidden="true">date_range</mat-icon><span>{{ 'Series' | t }}: {{ exam.seriesStartDate | date:'dd MMM yyyy' }} – {{ exam.seriesEndDate | date:'dd MMM yyyy' }}</span></small>
+              </span>
               <span class="dashboard-exam-result" *ngIf="exam.result"><strong>{{ exam.result.score }}/{{ exam.result.totalMarks }}</strong><small>{{ 'Submitted' | t }}</small></span>
-              <span class="dashboard-exam-state" *ngIf="!exam.result">{{ exam.window?.canTake ? ('Available' | t) : ('Upcoming' | t) }}</span>
+              <span class="dashboard-exam-state upcoming exam-countdown" *ngIf="!exam.result && examStatus(exam) === 'Upcoming'"><mat-icon aria-hidden="true">timer</mat-icon><span>{{ 'Starts in' | t }} {{ examCountdown(exam) }}</span></span>
+              <span class="dashboard-exam-state" [class.closed]="examStatus(exam) === 'Closed'" [class.available]="examStatus(exam) === 'Available'" *ngIf="!exam.result && examStatus(exam) !== 'Upcoming'">{{ examStatus(exam) | t }}</span>
             </article>
           </div>
           <ng-template #noMainsExams><p class="no-dashboard-exams">{{ 'No scheduled exams yet.' | t }}</p></ng-template>
