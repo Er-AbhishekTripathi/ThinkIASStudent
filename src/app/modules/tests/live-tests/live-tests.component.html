@@ -18,6 +18,14 @@
       </div>
     </label>
 
+    <label *ngIf="testKind === 'mains'">
+      <span>Subject</span>
+      <select aria-label="Filter by subject" [(ngModel)]="subjectFilter">
+        <option value="all">All subjects</option>
+        <option *ngFor="let subject of subjects" [value]="subject">{{ subject }}</option>
+      </select>
+    </label>
+
     <label>
       <span>Status</span>
       <select aria-label="Filter by test status" [(ngModel)]="statusFilter">
@@ -57,8 +65,11 @@
     <p>Loading tests...</p>
   </div>
 
-  <div class="tests-grid" *ngIf="!loading() && filteredTests.length > 0">
-    <mat-card *ngFor="let test of filteredTests" class="test-card">
+  <div *ngIf="!loading() && filteredTests.length > 0">
+    <section class="subject-group" *ngFor="let group of groupedTests">
+      <h2 *ngIf="testKind === 'mains'">{{ group.subject }}</h2>
+      <div class="tests-grid">
+    <mat-card *ngFor="let test of group.tests" class="test-card">
       <div class="card-accent"></div>
           <mat-card-header>
             <span *ngIf="isAdmin" class="test-card-kicker"><mat-icon>calendar_today</mat-icon>{{ test.startTime | date:'dd MMM yyyy' }}</span>
@@ -136,6 +147,8 @@
         <span>Generating PDF...</span>
       </div>
     </mat-card>
+      </div>
+    </section>
   </div>
 
   <div *ngIf="!loading() && tests().length === 0" class="no-tests">

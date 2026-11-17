@@ -22,6 +22,7 @@ export class TestSeriesScheduleComponent implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
   series: any[] = []; error = '';
   search='';status='all';loading=true;
+  subject='';
   private timer: ReturnType<typeof setInterval> | null = null;
   now = Date.now();
   state(item:any){
@@ -36,7 +37,13 @@ export class TestSeriesScheduleComponent implements OnInit, OnDestroy {
       (date.getFullYear() === now.getFullYear() && date.getMonth() === now.getMonth() && date.getDate() > now.getDate());
     return isAfter(startDate) ? 'upcoming' : isBefore(endDate) ? 'completed' : 'available';
   }
-  get filtered(){return this.series.filter(item=>(this.status==='all'||this.state(item)===this.status)&&[item.name,item.nameHi,item.nameHindi,item.description,item.descriptionHi,item.descriptionHindi].join(' ').toLowerCase().includes(this.search.toLowerCase()));}
+  get filtered(){return this.series.filter(item=>{
+    const haystack=[item.name,item.nameHi,item.nameHindi,item.description,item.descriptionHi,item.descriptionHindi].join(' ').toLowerCase();
+    const matchesSearch=!this.search||haystack.includes(this.search.toLowerCase());
+    const matchesStatus=this.status==='all'||this.state(item)===this.status;
+    const matchesSubject=!this.subject||haystack.includes(this.subject.toLowerCase());
+    return matchesSearch&&matchesStatus&&matchesSubject;
+  });}
   seriesText(item:any, field:'name'|'description'|'intro'):string {
     const hindi = item?.[`${field}Hi`] ?? item?.[`${field}Hindi`];
     return this.language.content(item?.[field], hindi);
@@ -54,6 +61,8 @@ export class TestSeriesScheduleComponent implements OnInit, OnDestroy {
   viewResult(test:any){ this.router.navigate(['/result-detail', test.result._id], { queryParams: { testId: test.exam._id } }); }
   ngOnInit() {
     this.kind=this.route.snapshot.data['kind'] || this.kind;
+    this.subject=this.route.snapshot.queryParamMap.get('subject') || '';
+    this.route.queryParamMap.subscribe((params) => { this.subject = params.get('subject') || ''; });
     this.timer = setInterval(() => this.now = Date.now(), 1000);
     this.http.get<any>(`${environment.apiUrl}/${this.kind === 'pre' ? 'prelims' : 'mains'}-ts/student/all`).subscribe({next: r => {this.series = r.data;this.loading=false;}, error: e => { this.loading=false; if (e.status === 403) this.error=e.error?.message || "Plan access required."; else this.error = this.language.hindi ? 'टेस्ट का कार्यक्रम लोड नहीं हुआ।' : 'Unable to load the test schedule.'; }});
   }

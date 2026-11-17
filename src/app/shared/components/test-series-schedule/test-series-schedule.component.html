@@ -2,7 +2,7 @@
 <header class="schedule-hero">
 <div>
 <span class="eyebrow">{{ kind === 'pre' ? 'PRELIMS PREPARATION' : 'MAINS PREPARATION' }}</span>
-<h1>{{ (kind === 'pre' ? 'Prelims Test Series' : 'Mains Test Series') | t }}</h1>
+<h1>{{ (kind === 'pre' ? 'Prelims Test Series' : 'Mains Test Series') | t }}{{ subject ? ' · ' + subject : '' }}</h1>
 <p>{{ kind === 'pre' ? 'Attempt scheduled papers, track countdown and review results.' : 'Attempt scheduled papers, track countdown and review results.' }}</p>
 </div>
 <div class="hero-mark">

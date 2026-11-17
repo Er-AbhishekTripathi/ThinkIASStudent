@@ -57,6 +57,7 @@ export class LiveTestsComponent implements OnInit, OnDestroy {
   dateFrom = '';
   dateTo = '';
   sortOrder = 'newest';
+  subjectFilter = 'all';
 
   get filteredTests() {
     const query = this.search.trim().toLowerCase();
@@ -66,10 +67,11 @@ export class LiveTestsComponent implements OnInit, OnDestroy {
         const text = [test.title, test.description, test.titleHi, test.descriptionHi].join(' ').toLowerCase();
         const matchesSearch = !query || (!isTestExpired(test, this.now) && text.includes(query));
         const matchesStatus = this.matchesStatusFilter(test);
+        const matchesSubject = this.subjectFilter === 'all' || this.subjectOf(test) === this.subjectFilter;
         const matchesFrom = !this.dateFrom || new Date(test.startTime).getTime() >= new Date(`${this.dateFrom}T00:00:00`).getTime();
         const matchesTo = !this.dateTo || new Date(test.startTime).getTime() <= new Date(`${this.dateTo}T23:59:59`).getTime();
 
-        return matchesSearch && matchesStatus && matchesFrom && matchesTo;
+        return matchesSearch && matchesStatus && matchesSubject && matchesFrom && matchesTo;
       })
       .sort((a, b) => {
         const startA = new Date(a.startTime).getTime();
@@ -102,9 +104,31 @@ export class LiveTestsComponent implements OnInit, OnDestroy {
   clearFilters() {
     this.search = '';
     this.statusFilter = 'all';
+    this.subjectFilter = 'all';
     this.dateFrom = '';
     this.dateTo = '';
     this.sortOrder = 'newest';
+  }
+
+  subjectOf(test: any): string {
+    const labeled = String(test?.paper || test?.subject || '').trim();
+    if (labeled) return labeled;
+    const title = String(test?.title || '');
+    const match = title.match(/GS[- ]?(?:IV|III|II|I|[1-4])|Essay|CSAT|History|Geography|PSIR|Hindi|Mathematics|Optional/i);
+    return match ? match[0].replace(/gs[- ]?/i, (value) => value.toUpperCase().startsWith('GS') ? value.toUpperCase() : value) : 'General';
+  }
+
+  get subjects(): string[] {
+    return [...new Set(this.tests().map((test) => this.subjectOf(test)))].sort((a, b) => a.localeCompare(b));
+  }
+
+  get groupedTests(): Array<{ subject: string; tests: any[] }> {
+    const groups = new Map<string, any[]>();
+    for (const test of this.filteredTests) {
+      const subject = this.subjectOf(test);
+      groups.set(subject, [...(groups.get(subject) || []), test]);
+    }
+    return [...groups.entries()].map(([subject, tests]) => ({ subject, tests }));
   }
 
   matchesStatusFilter(test: any): boolean {
@@ -138,12 +162,22 @@ export class LiveTestsComponent implements OnInit, OnDestroy {
     return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
   }
 
+  uniqueTests(tests: any[]): any[] {
+    const seen = new Set<string>();
+    return (tests || []).filter((test) => {
+      const id = String(test?._id || '');
+      if (!id || seen.has(id)) return false;
+      seen.add(id);
+      return true;
+    });
+  }
+
   loadTests() {
     this.loading.set(true);
     if (this.isAdmin) {
       this.testService.getAllTests().subscribe({
         next: (tests) => {
-          this.tests.set(tests);
+          this.tests.set(this.uniqueTests(tests));
           this.loading.set(false);
         },
         error: (error) => {
@@ -157,7 +191,7 @@ export class LiveTestsComponent implements OnInit, OnDestroy {
         : this.testService.getUpcomingTests();
       tests$.subscribe({
         next: (tests) => {
-          this.tests.set(tests);
+          this.tests.set(this.uniqueTests(tests));
           this.loading.set(false);
         },
         error: (error) => {
