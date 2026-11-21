@@ -153,13 +153,21 @@
             </div>
 
             <div class="quiz-stats-bar">
-                <button mat-button (click)="toggleLanguage()" class="language-toggle">
-                <mat-icon>language</mat-icon>
-                <span>
-                    Currently in <strong>{{ getCurrentLanguageText() }}</strong>
-                    · tap to change
-                </span>
-            </button>
+                <div class="language-toggle-group" aria-label="Select quiz language">
+                    <mat-icon>language</mat-icon>
+                    <button type="button"
+                        class="language-option"
+                        [class.active]="currentLanguage() === 'en'"
+                        (click)="setLanguage('en')">
+                        English
+                    </button>
+                    <button type="button"
+                        class="language-option"
+                        [class.active]="currentLanguage() === 'hi'"
+                        (click)="setLanguage('hi')">
+                        हिंदी
+                    </button>
+                </div>
                 <div class="stat">
                     <mat-icon>help_outline</mat-icon>
                     <span>Question {{ currentQuestionNumber() }} of {{ quizQuestions().length }}</span>

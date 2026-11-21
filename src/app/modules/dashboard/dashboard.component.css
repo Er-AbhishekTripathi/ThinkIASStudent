@@ -59,6 +59,7 @@
 .student-exam-summary { margin: 8px 0 14px; color: #64748b; font-size: 12px; }
 .dashboard-exam-list { display: grid; gap: 10px; }
 .dashboard-exam-row { display: flex; align-items: center; gap: 12px; min-width: 0; min-height: 76px; padding: 12px; border: 1px solid #e5edf1; border-radius: 12px; background: linear-gradient(110deg, #fbfdfc, #f6faf9); transition: border-color .2s ease, box-shadow .2s ease; }
+.dashboard-exam-row.upcoming-exam { border-color: #9dcbb4; background: linear-gradient(110deg, #eef8f1, #f8fcf9); box-shadow: inset 3px 0 0 #198754; }
 .dashboard-exam-row:hover { border-color: #c8ddd3; box-shadow: 0 5px 14px rgba(16, 42, 67, .06); }
 .exam-type-icon { display: grid; flex: 0 0 34px; width: 34px; height: 34px; place-items: center; border-radius: 9px; }
 .exam-type-icon mat-icon { width: 19px; height: 19px; font-size: 19px; }

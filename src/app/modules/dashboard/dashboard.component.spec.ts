@@ -4,7 +4,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { Router } from '@angular/router';
 import { of } from 'rxjs';
 
-import { DashboardComponent, filterUpcomingTests, formatExamCountdown, getSeriesExamStatus, isTestSeriesClosed } from './dashboard.component';
+import { DashboardComponent, filterUpcomingSeriesExams, filterUpcomingTests, formatExamCountdown, getSeriesExamStatus, isTestSeriesClosed } from './dashboard.component';
 import { AuthService } from '../../shared/services/auth.service';
 import { LiveTestService } from '../../shared/services/live-test.service';
 import { PublicPlanService } from '../../shared/services/public-plan.service';
@@ -42,22 +42,23 @@ describe('DashboardComponent', () => {
 });
 
 describe('filterUpcomingTests', () => {
-  const now = new Date('2026-10-08T00:00:00Z').getTime();
+  const now = new Date(2026, 9, 8, 12).getTime();
 
-  it('keeps tests the student has not submitted that have not expired', () => {
+  it('keeps unsubmitted, unexpired tests scheduled for today or later', () => {
     const tests = [
-      { _id: 'future', title: 'Future', description: '', startTime: '', endTime: '2026-10-09T00:00:00Z', duration: 30, questions: [], submitted: false },
-      { _id: 'active', title: 'Active', description: '', startTime: '', endTime: '2026-10-08T01:00:00Z', duration: 30, questions: [], submitted: false },
-      { _id: 'submitted', title: 'Submitted', description: '', startTime: '', endTime: '2026-10-09T00:00:00Z', duration: 30, questions: [], submitted: true },
-      { _id: 'expired', title: 'Expired', description: '', startTime: '', endTime: '2026-10-07T23:59:59Z', duration: 30, questions: [], submitted: false }
+      { _id: 'future', title: 'Future', description: '', startTime: '2026-10-09T00:00:00', endTime: '2026-10-09T23:59:59', duration: 30, questions: [], submitted: false },
+      { _id: 'today', title: 'Today', description: '', startTime: '2026-10-08T01:00:00', endTime: '2026-10-08T23:59:59', duration: 30, questions: [], submitted: false },
+      { _id: 'yesterday', title: 'Yesterday', description: '', startTime: '2026-10-07T23:59:00', endTime: '2026-10-09T23:59:59', duration: 30, questions: [], submitted: false },
+      { _id: 'submitted', title: 'Submitted', description: '', startTime: '2026-10-09T00:00:00', endTime: '2026-10-09T23:59:59', duration: 30, questions: [], submitted: true },
+      { _id: 'expired', title: 'Expired', description: '', startTime: '2026-10-09T00:00:00', endTime: '2026-10-07T23:59:59', duration: 30, questions: [], submitted: false }
     ];
 
-    expect(filterUpcomingTests(tests, now).map(test => test._id)).toEqual(['future', 'active']);
+    expect(filterUpcomingTests(tests, now).map(test => test._id)).toEqual(['future', 'today']);
   });
 
   it('uses an active reopen deadline instead of the original expiry', () => {
     const tests = [
-      { _id: 'reopened', title: 'Reopened', description: '', startTime: '', endTime: '2026-10-07T23:00:00Z', reopenUntil: '2026-10-08T01:00:00Z', duration: 30, questions: [], submitted: false }
+      { _id: 'reopened', title: 'Reopened', description: '', startTime: '2026-10-08T01:00:00', endTime: '2026-10-07T23:00:00', reopenUntil: '2026-10-08T13:00:00', duration: 30, questions: [], submitted: false }
     ];
 
     expect(filterUpcomingTests(tests, now).map(test => test._id)).toEqual(['reopened']);
@@ -86,6 +87,22 @@ describe('Test Series status', () => {
       seriesEndDate: new Date(2026, 9, 7),
       window: { canTake: true }
     }, today)).toBe('Closed');
+  });
+});
+
+describe('filterUpcomingSeriesExams', () => {
+  const now = new Date(2026, 9, 8, 12).getTime();
+
+  it('keeps only future, unsubmitted exams that are still upcoming', () => {
+    const exams = [
+      { id: 'future', startTime: new Date(2026, 9, 8, 13) },
+      { id: 'open', startTime: new Date(2026, 9, 8, 11) },
+      { id: 'available', startTime: new Date(2026, 9, 8, 13), window: { canTake: true } },
+      { id: 'submitted', startTime: new Date(2026, 9, 8, 13), result: { score: 10 } },
+      { id: 'closed', startTime: new Date(2026, 9, 8, 13), seriesEndDate: new Date(2026, 9, 7) }
+    ];
+
+    expect(filterUpcomingSeriesExams(exams, now).map(exam => exam.id)).toEqual(['future']);
   });
 });
 

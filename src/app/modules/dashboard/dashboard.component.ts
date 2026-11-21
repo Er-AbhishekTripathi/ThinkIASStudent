@@ -22,9 +22,17 @@ import { Chart, registerables } from 'chart.js';
 Chart.register(...registerables);
 
 export function filterUpcomingTests(tests: Test[], now = Date.now()): Test[] {
+  const today = new Date(now);
+  today.setHours(0, 0, 0, 0);
+
   return tests.filter(test => {
+    const startTime = new Date(test.startTime).getTime();
     const expiryTime = new Date(test.reopenUntil || test.endTime || '').getTime();
-    return !test.submitted && Number.isFinite(expiryTime) && expiryTime > now;
+    return !test.submitted &&
+      Number.isFinite(startTime) &&
+      startTime >= today.getTime() &&
+      Number.isFinite(expiryTime) &&
+      expiryTime > now;
   });
 }
 
@@ -51,6 +59,15 @@ export function getSeriesExamStatus(
   if (exam.window?.canTake) return 'Available';
   if (exam.startTime && new Date(exam.startTime).getTime() > now) return 'Upcoming';
   return 'Open';
+}
+
+export function filterUpcomingSeriesExams<T extends {
+  startTime?: string | Date;
+  seriesEndDate?: string | Date;
+  window?: { canTake?: boolean };
+  result?: unknown;
+}>(exams: T[], now = Date.now()): T[] {
+  return exams.filter(exam => !exam.result && getSeriesExamStatus(exam, now) === 'Upcoming');
 }
 
 export function formatExamCountdown(startTime: string | Date, now = Date.now()): string {
@@ -96,6 +113,19 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
   upcomingTests = signal<any[]>([]);
   prelimsExams = signal<any[]>([]);
   mainsExams = signal<any[]>([]);
+  prelimsUpcomingExams = computed(() => {
+    this.liveClock();
+    return filterUpcomingSeriesExams(this.prelimsExams());
+  });
+  mainsUpcomingExams = computed(() => {
+    this.liveClock();
+    return filterUpcomingSeriesExams(this.mainsExams());
+  });
+  hasUpcomingSeriesExams = computed(() => {
+    const type = this.currentUser()?.type;
+    return ((type === 'pre' || type === 'combo') && this.prelimsUpcomingExams().length > 0) ||
+      ((type === 'mains' || type === 'combo') && this.mainsUpcomingExams().length > 0);
+  });
   prelimsCompletedCount = computed(() => this.prelimsExams().filter(exam => !!exam.result).length);
   mainsCompletedCount = computed(() => this.mainsExams().filter(exam => !!exam.result).length);
   liveTests = signal<LiveTest[]>([]);

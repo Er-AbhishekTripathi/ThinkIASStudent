@@ -1,4 +1,4 @@
-import { Component, inject, signal, OnInit, TemplateRef, ViewChild, ElementRef, AfterViewChecked } from '@angular/core';
+import { Component, computed, inject, signal, OnInit, TemplateRef, ViewChild, ElementRef, AfterViewChecked } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatTableModule } from '@angular/material/table';
@@ -13,6 +13,8 @@ import { MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dial
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatBadgeModule } from '@angular/material/badge';
+import { MatSortModule, Sort } from '@angular/material/sort';
+import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { interval, Subscription } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 
@@ -54,6 +56,8 @@ interface ChatMessage {
     MatInputModule,
     FormsModule,
     MatBadgeModule,
+    MatSortModule,
+    MatPaginatorModule,
     // TruncatePipe
   ],
   templateUrl: './results.component.html',
@@ -69,6 +73,57 @@ export class ResultsComponent implements OnInit, AfterViewChecked {
   private dialog = inject(MatDialog);
 
   results = signal<TestResult[]>([]);
+  sortState = signal<Sort>({ active: 'submittedAt', direction: 'desc' });
+  sortedResults = computed(() => {
+    const results = this.results();
+    const { active, direction } = this.sortState();
+
+    if (!active || !direction) {
+      return results;
+    }
+
+    return [...results].sort((a, b) => this.compareResults(a, b, active, direction));
+  });
+  searchTerm = signal('');
+  pageIndex = signal(0);
+  pageSize = signal(10);
+  filteredResults = computed(() => {
+    const query = this.searchTerm().trim().toLocaleLowerCase();
+    const results = this.sortedResults();
+
+    if (!query) return results;
+
+    return results.filter(result => {
+      const startTime = result.test.startTime;
+      const submittedAt = result.submittedAt;
+      const searchableValues = [
+        result.test.title,
+        startTime,
+        startTime ? this.formatSearchDate(startTime) : '',
+        `${result.score}/${result.totalMarks}`,
+        `${result.percentage}%`,
+        result.rank,
+        result.rank ? `${result.rank}${this.getOrdinalSuffix(result.rank)}` : '',
+        result.totalStudents,
+        result.totalStudents ? `out of ${result.totalStudents}` : '',
+        submittedAt,
+        submittedAt ? this.formatSearchDate(submittedAt) : '',
+        result.videoLink ? 'watch video' : 'no recording'
+      ];
+
+      return searchableValues.some(value =>
+        String(value ?? '').toLocaleLowerCase().includes(query)
+      );
+    });
+  });
+  pagedResults = computed(() => {
+    const results = this.filteredResults();
+    const pageSize = Math.max(this.pageSize(), 1);
+    const lastPage = Math.max(Math.ceil(results.length / pageSize) - 1, 0);
+    const page = Math.min(this.pageIndex(), lastPage);
+
+    return results.slice(page * pageSize, (page + 1) * pageSize);
+  });
   chatMessages = signal<ChatMessage[]>([]);
   loading = signal(false);
   chatLoading = signal(false);
@@ -115,6 +170,82 @@ export class ResultsComponent implements OnInit, AfterViewChecked {
         console.error('Error loading results:', error);
         this.loading.set(false);
       }
+    });
+  }
+
+  onSortChange(sort: Sort) {
+    this.sortState.set(sort);
+  }
+
+  selectSortColumn(active: string) {
+    this.sortState.set({ active, direction: 'asc' });
+  }
+
+  toggleSortDirection() {
+    const { active, direction } = this.sortState();
+    if (!active) return;
+
+    this.sortState.set({ active, direction: direction === 'asc' ? 'desc' : 'asc' });
+  }
+
+  onSearchChange(value: string) {
+    this.searchTerm.set(value);
+    this.pageIndex.set(0);
+  }
+
+  clearSearch() {
+    this.onSearchChange('');
+  }
+
+  onPageChange(event: PageEvent) {
+    this.pageIndex.set(event.pageIndex);
+    this.pageSize.set(event.pageSize);
+  }
+
+  private compareResults(a: TestResult, b: TestResult, column: string, direction: 'asc' | 'desc'): number {
+    const aValue = this.getSortValue(a, column);
+    const bValue = this.getSortValue(b, column);
+
+    if (aValue === null) return bValue === null ? 0 : 1;
+    if (bValue === null) return -1;
+
+    const comparison = typeof aValue === 'string' && typeof bValue === 'string'
+      ? aValue.localeCompare(bValue, undefined, { numeric: true, sensitivity: 'base' })
+      : Number(aValue) - Number(bValue);
+
+    return direction === 'asc' ? comparison : -comparison;
+  }
+
+  private getSortValue(result: TestResult, column: string): string | number | null {
+    switch (column) {
+      case 'test':
+        return result.test.title.toLocaleLowerCase();
+      case 'score':
+        return Number.isFinite(result.score) ? result.score : null;
+      case 'percentage':
+        return Number.isFinite(result.percentage) ? result.percentage : null;
+      case 'rank':
+        return typeof result.rank === 'number' && Number.isFinite(result.rank) ? result.rank : null;
+      case 'submittedAt': {
+        const timestamp = Date.parse(result.submittedAt);
+        return Number.isFinite(timestamp) ? timestamp : null;
+      }
+      default:
+        return null;
+    }
+  }
+
+  private formatSearchDate(value: string): string {
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return value;
+
+    return date.toLocaleString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+      second: '2-digit'
     });
   }
 

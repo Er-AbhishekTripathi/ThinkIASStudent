@@ -6,6 +6,7 @@ export const environment = {
 //   baseUrl: 'https://bytestech.online',
 //   iUrl: 'https://bytestech.online/api',
 //   apiUrl: 'https://bytestech.online/api',
+// production: true,
 
   firebase: {
     apiKey: '',

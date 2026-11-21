@@ -54,8 +54,8 @@
 .table-actions { display: flex; align-items: center; gap: 7px; white-space: nowrap; }
 .table-actions button { min-height: 34px !important; padding: 0 8px !important; font-size: 12px !important; }
 .table-actions button mat-icon { width: 16px; height: 16px; font-size: 16px; }
-.tests-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 24px; }
-.mains-page .tests-grid { grid-template-columns: repeat(3, minmax(0, 350px)); }
+.tests-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 270px), 1fr)); gap: 24px; }
+.mains-page .tests-grid { grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 350px)); }
 .mains-page .test-card {
   border-radius: 16px;
   background: #fff;
@@ -72,10 +72,7 @@
 .mains-page .description { min-height: 58px; margin-top: 6px; font-size: 14px; line-height: 1.6; }
 .mains-page .test-meta { gap: 8px 12px; padding-top: 12px; font-size: 13px; }
 .mains-page .test-card mat-card-actions { padding: 0 20px 20px; }
-.mains-page .student-actions { gap: 8px; }
-.mains-page .student-actions button { min-height: 46px; border-radius: 24px; font-size: 15px; }
-.mains-page .student-actions button:first-child { min-width: 154px; border-color: #697979; color: #174c46; }
-.mains-page .student-actions .start-test-button:not([disabled]) { min-width: 126px; }
+.mains-page .student-actions button:first-child { border-color: #697979; color: #174c46; }
 .test-card { position: relative; overflow: hidden; border: 1px solid #dce9e4; border-radius: 18px; box-shadow: 0 8px 24px rgba(19, 59, 59, .06); transition: transform .25s ease, border-color .25s ease, box-shadow .25s ease; }
 .test-card:hover { transform: translateY(-5px); border-color: #84c5b7; box-shadow: 0 16px 30px rgba(19, 96, 82, .13); }
 .card-accent { height: 5px; background: linear-gradient(90deg, #176b60, #d49b3c); }
@@ -97,9 +94,11 @@
 .test-card mat-card-actions { padding: 0 22px 22px; }
 .test-card mat-card-actions button[color="primary"] { color: #197c6b; }
 .test-card mat-card-actions button[color="primary"]:hover:not([disabled]) { background: #146c43; color: #fff; }
-.student-actions { display: flex; align-items: center; justify-content: flex-end; gap: 10px; width: 100%; }
+.student-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: stretch; gap: 8px; width: 100%; }
 .student-actions button, .admin-actions button { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 38px; }
-.student-actions button mat-icon, .admin-actions button mat-icon { width: 18px; height: 18px; font-size: 18px; }
+.student-actions button { box-sizing: border-box; width: 100%; min-width: 0; min-height: 36px; padding: 0 6px; gap: 4px; font-size: 12px; white-space: nowrap; }
+.student-actions button mat-icon { flex-shrink: 0; width: 16px; height: 16px; font-size: 16px; }
+.admin-actions button mat-icon { width: 18px; height: 18px; font-size: 18px; }
 .student-actions .start-test-button:not([disabled]) {
   --mdc-protected-button-container-color: #198754;
   --mdc-protected-button-label-text-color: #fff;
@@ -141,11 +140,6 @@
 .introduction-modal-footer { display: flex; justify-content: flex-end; padding: 16px 24px; border-top: 1px solid #e5efeb; }
 .introduction-modal-footer button { display: inline-flex; align-items: center; gap: 6px; }
 
-@media (max-width: 1200px) {
-  .tests-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .mains-page .tests-grid { grid-template-columns: repeat(2, minmax(0, 350px)); }
-}
-
 @media (max-width: 768px) {
   .live-tests-container { padding: 16px; }
   .live-tests-container > .header { min-height: 128px; padding: 22px 24px; }
@@ -155,8 +149,6 @@
   .tests-grid { grid-template-columns: 1fr; }
   .mains-page .tests-grid { grid-template-columns: minmax(0, 350px); }
   .test-filters strong { margin-left: 0; }
-  .student-actions { align-items: stretch; flex-direction: column-reverse; }
-  .student-actions button { width: 100%; }
   .introduction-modal-header, .introduction-modal-content { padding: 18px; }
   .introduction-modal-footer { padding: 14px 18px; }
 }

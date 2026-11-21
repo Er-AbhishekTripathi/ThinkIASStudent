@@ -161,10 +161,10 @@
   padding: 16px 8px;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 8px 0 24px rgba(16, 42, 67, 0.05);
-  position: relative;
   overflow-x: hidden;
 
   mat-nav-list {
+    margin-top: 0;
     padding: 0;
   }
 
@@ -717,7 +717,6 @@
   padding-top: 10px;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 2px 0 8px rgba(0, 0, 0, 0.04);
-  position: fixed; /* Changed to fixed for better control */
 }
 
 /* ============================
@@ -727,19 +726,20 @@
   display: flex;
   flex-direction: column;
   flex: 1;
+  box-sizing: border-box;
   min-width: 0;
+  width: 100%;
   background: #f9f9fc;
   overflow-y: auto;
   overflow-x: hidden;
   transition: all 0.3s ease;
-  width: calc(100% - 280px);
-  margin-left: 280px;
   min-height: 100%;
 }
 
 .content-wrapper {
   flex: 1 0 auto;
   width: 100%;
+  box-sizing: border-box;
   min-width: 0;
   padding: clamp(12px, 1.5vw, 20px);
   min-height: 0;
@@ -810,18 +810,9 @@
   /* No additional margins needed */
 }
 
-mat-nav-list{
-  margin-top: 70px;
-}
-
 @media (min-width: 769px) and (max-width: 1024px) {
   .app-sidenav {
     width: 260px;
-  }
-
-  .content-area {
-    width: calc(100% - 260px);
-    margin-left: 260px;
   }
 }
 
@@ -1241,6 +1232,10 @@ mat-nav-list{
   height: 54px;
   object-fit: cover;
   border-radius: 8px;
+  background: #000;
+}
+.proctor-pip span { font-size: 12px; line-height: 1.35; }
+ border-radius: 8px;
   background: #000;
 }
 .proctor-pip span { font-size: 12px; line-height: 1.35; }

@@ -18,49 +18,43 @@
       <a class="quick-stat-link" routerLink="/prelims-tests"><mat-icon>event</mat-icon><span><strong>{{ upcomingTests().length }}</strong>{{ 'Upcoming tests' | t }}</span><mat-icon class="quick-stat-arrow">arrow_forward</mat-icon></a>
       <a class="quick-stat-link" routerLink="/prelims-results"><mat-icon>insights</mat-icon><span><strong>{{ recentResults().length }}</strong>{{ 'Recent results' | t }}</span><mat-icon class="quick-stat-arrow">arrow_forward</mat-icon></a>
     </section>
-    <section *ngIf="currentUser()?.type !== 'fresh'" class="stats-grid">
-      <mat-card class="student-exam-card" *ngIf="currentUser()?.type === 'pre' || currentUser()?.type === 'combo'">
+    <section *ngIf="hasUpcomingSeriesExams()" class="stats-grid">
+      <mat-card class="student-exam-card" *ngIf="(currentUser()?.type === 'pre' || currentUser()?.type === 'combo') && prelimsUpcomingExams().length">
         <mat-card-content>
           <div class="student-exam-heading"><div><span class="section-kicker">{{ 'PRELIMS' | t }}</span><h2>{{ 'Prelims' | t }}</h2></div><mat-icon>quiz</mat-icon></div>
           <p class="student-exam-summary">{{ prelimsCompletedCount() }} {{ 'Completed Tests' | t }}</p>
-          <div class="dashboard-exam-list" *ngIf="prelimsExams().length; else noPrelimsExams">
-            <article class="dashboard-exam-row" *ngFor="let exam of prelimsExams().slice(0, 3)">
+          <div class="dashboard-exam-list">
+            <article class="dashboard-exam-row upcoming-exam" *ngFor="let exam of prelimsUpcomingExams().slice(0, 3)">
               <span class="exam-type-icon prelims-icon"><mat-icon>event</mat-icon></span>
               <span class="dashboard-exam-copy">
                 <strong>{{ exam.examTitle }}</strong>
                 <small class="exam-schedule">{{ exam.startTime | date:'dd MMM yyyy, hh:mm a' }} <span aria-hidden="true">·</span> {{ exam.duration }} min</small>
                 <small class="series-date-range"><mat-icon aria-hidden="true">date_range</mat-icon><span>{{ 'Series' | t }}: {{ exam.seriesStartDate | date:'dd MMM yyyy' }} – {{ exam.seriesEndDate | date:'dd MMM yyyy' }}</span></small>
               </span>
-              <span class="dashboard-exam-result" *ngIf="exam.result"><strong>{{ exam.result.score }}/{{ exam.result.totalMarks }}</strong><small>{{ 'Submitted' | t }}</small></span>
-              <span class="dashboard-exam-state upcoming exam-countdown" *ngIf="!exam.result && examStatus(exam) === 'Upcoming'"><mat-icon aria-hidden="true">timer</mat-icon><span>{{ 'Starts in' | t }} {{ examCountdown(exam) }}</span></span>
-              <span class="dashboard-exam-state" [class.closed]="examStatus(exam) === 'Closed'" [class.available]="examStatus(exam) === 'Available'" *ngIf="!exam.result && examStatus(exam) !== 'Upcoming'">{{ examStatus(exam) | t }}</span>
+              <span class="dashboard-exam-state upcoming exam-countdown"><mat-icon aria-hidden="true">timer</mat-icon><span>{{ 'Starts in' | t }} {{ examCountdown(exam) }}</span></span>
             </article>
           </div>
-          <ng-template #noPrelimsExams><p class="no-dashboard-exams">{{ 'No scheduled exams yet.' | t }}</p></ng-template>
           <div class="student-exam-actions">
             <a mat-stroked-button color="primary" routerLink="/prelims-test-series">{{ 'View All Tests' | t }}<mat-icon>arrow_forward</mat-icon></a>
             <a mat-button routerLink="/prelims-results">{{ 'View Results' | t }}<mat-icon>arrow_forward</mat-icon></a>
           </div>
         </mat-card-content>
       </mat-card>
-      <mat-card class="student-exam-card" *ngIf="currentUser()?.type === 'mains' || currentUser()?.type === 'combo'">
+      <mat-card class="student-exam-card" *ngIf="(currentUser()?.type === 'mains' || currentUser()?.type === 'combo') && mainsUpcomingExams().length">
         <mat-card-content>
           <div class="student-exam-heading"><div><span class="section-kicker mains-kicker">{{ 'MAINS' | t }}</span><h2>{{ 'Mains' | t }}</h2></div><mat-icon>edit_note</mat-icon></div>
           <p class="student-exam-summary">{{ mainsCompletedCount() }} {{ 'Completed Tests' | t }}</p>
-          <div class="dashboard-exam-list" *ngIf="mainsExams().length; else noMainsExams">
-            <article class="dashboard-exam-row" *ngFor="let exam of mainsExams().slice(0, 3)">
+          <div class="dashboard-exam-list">
+            <article class="dashboard-exam-row upcoming-exam" *ngFor="let exam of mainsUpcomingExams().slice(0, 3)">
               <span class="exam-type-icon mains-icon"><mat-icon>event</mat-icon></span>
               <span class="dashboard-exam-copy">
                 <strong>{{ exam.examTitle }}</strong>
                 <small class="exam-schedule">{{ exam.startTime | date:'dd MMM yyyy, hh:mm a' }} <span aria-hidden="true">·</span> {{ exam.duration }} min</small>
                 <small class="series-date-range"><mat-icon aria-hidden="true">date_range</mat-icon><span>{{ 'Series' | t }}: {{ exam.seriesStartDate | date:'dd MMM yyyy' }} – {{ exam.seriesEndDate | date:'dd MMM yyyy' }}</span></small>
               </span>
-              <span class="dashboard-exam-result" *ngIf="exam.result"><strong>{{ exam.result.score }}/{{ exam.result.totalMarks }}</strong><small>{{ 'Submitted' | t }}</small></span>
-              <span class="dashboard-exam-state upcoming exam-countdown" *ngIf="!exam.result && examStatus(exam) === 'Upcoming'"><mat-icon aria-hidden="true">timer</mat-icon><span>{{ 'Starts in' | t }} {{ examCountdown(exam) }}</span></span>
-              <span class="dashboard-exam-state" [class.closed]="examStatus(exam) === 'Closed'" [class.available]="examStatus(exam) === 'Available'" *ngIf="!exam.result && examStatus(exam) !== 'Upcoming'">{{ examStatus(exam) | t }}</span>
+              <span class="dashboard-exam-state upcoming exam-countdown"><mat-icon aria-hidden="true">timer</mat-icon><span>{{ 'Starts in' | t }} {{ examCountdown(exam) }}</span></span>
             </article>
           </div>
-          <ng-template #noMainsExams><p class="no-dashboard-exams">{{ 'No scheduled exams yet.' | t }}</p></ng-template>
           <div class="student-exam-actions">
             <a mat-stroked-button color="primary" routerLink="/mains-test-series">{{ 'View All Tests' | t }}<mat-icon>arrow_forward</mat-icon></a>
             <a mat-button routerLink="/mains-results">{{ 'View Results' | t }}<mat-icon>arrow_forward</mat-icon></a>

@@ -275,6 +275,43 @@
   backdrop-filter: blur(5px);
 }
 
+.language-toggle-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px;
+  border-radius: 30px;
+  background: rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  color: white;
+  backdrop-filter: blur(5px);
+}
+
+.language-toggle-group mat-icon {
+  width: 20px;
+  height: 20px;
+  margin: 0 4px 0 6px;
+  font-size: 20px;
+}
+
+.language-option {
+  min-width: 58px;
+  height: 34px;
+  border: 0;
+  border-radius: 22px;
+  background: transparent;
+  color: white;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.language-option.active {
+  background: #ffffff;
+  color: #1d4ed8;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.18);
+}
+
 .quiz-stats-bar {
   display: flex;
   gap: 25px;

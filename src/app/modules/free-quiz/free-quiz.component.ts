@@ -222,22 +222,27 @@ export class FreeQuizComponent implements OnInit, OnDestroy {
     localStorage.setItem('preferredLanguage', newLang);
   }
 
+  setLanguage(language: 'en' | 'hi'): void {
+    this.currentLanguage.set(language);
+    localStorage.setItem('preferredLanguage', language);
+  }
+
   getCurrentLanguageText(): string {
     return this.currentLanguage() === 'en' ? 'English' : 'हिंदी';
   }
 
   getQuestionText(question: any): string {
     if (!question) return '';
-    
+    if (typeof question === 'object') {
+      if (this.currentLanguage() === 'hi') {
+        return question.hindi || question.hi || question.english || question.en || question.question || '';
+      }
+      return question.english || question.en || question.question || question.hindi || question.hi || '';
+    }
     if (typeof question === 'string') {
       return question;
     }
-    
-    if (this.currentLanguage() === 'hi' && question.hindi) {
-      return question.hindi;
-    }
-    
-    return question.english || question.question || '';
+    return '';
   }
 
   // getOptionText(option: any): string {
@@ -427,17 +432,16 @@ export class FreeQuizComponent implements OnInit, OnDestroy {
 
 getOptionText(optionText: any): string {
     if (!optionText) return '';
-    
+    if (typeof optionText === 'object') {
+      if (this.currentLanguage() === 'hi') {
+        return optionText.hindi || optionText.hi || optionText.english || optionText.en || '';
+      }
+      return optionText.english || optionText.en || optionText.hindi || optionText.hi || '';
+    }
     if (typeof optionText === 'string') {
         return optionText;
     }
-    
-    if (this.currentLanguage() === 'hi' && optionText.hindi) {
-        return optionText.hindi;
-    }
-    
-    // Return English as default
-    return optionText.english || optionText || '';
+    return '';
 }
 
 // hasBilingualContent(question: any): boolean {
